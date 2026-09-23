@@ -1,0 +1,264 @@
+* {
+  box-sizing: border-box;
+}
+
+html {
+  font-family: Arial, Helvetica, sans-serif;
+
+  color: #1a1a1a;
+
+  background-color: #ffffff;
+}
+
+body {
+  margin: 0;
+
+  line-height: 1.6;
+}
+
+/* Grundlayout */
+
+.container {
+  width: min(1000px, calc(100% - 40px));
+
+  margin: 0 auto;
+}
+
+/* Kopfbereich */
+
+.page-header {
+  padding: 60px 0 40px;
+
+  border-bottom: 1px solid #d9d9d9;
+}
+
+.module-name {
+  margin: 0 0 8px;
+
+  color: #555555;
+
+  font-size: 14px;
+
+  text-transform: uppercase;
+
+  letter-spacing: 1px;
+}
+
+h1 {
+  max-width: 800px;
+
+  margin: 0;
+
+  font-size: 42px;
+
+  font-weight: 600;
+
+  line-height: 1.15;
+
+  letter-spacing: -1px;
+}
+
+.subtitle-row {
+  display: flex;
+
+  flex-wrap: wrap;
+
+  gap: 6px 20px;
+
+  margin: 10px 0 0;
+}
+
+.subtitle {
+  margin: 0;
+
+  color: #666666;
+
+  font-size: 18px;
+}
+
+/* Einleitung */
+
+.intro-section {
+  max-width: 720px;
+
+  padding: 50px 0;
+}
+
+.intro-section p {
+  margin: 0 0 12px;
+
+  color: #555555;
+
+  font-size: 17px;
+}
+
+/* Aufgabenübersicht */
+
+.assignments {
+  padding-bottom: 70px;
+}
+
+.section-header {
+  padding-bottom: 25px;
+
+  border-bottom: 2px solid #1a1a1a;
+}
+
+.section-number {
+  margin: 0 0 4px;
+
+  color: #1f5fa8;
+
+  font-size: 14px;
+
+  font-weight: 700;
+
+  text-transform: uppercase;
+
+  letter-spacing: 0.5px;
+}
+
+h2 {
+  margin: 0;
+
+  font-size: 28px;
+
+  font-weight: 600;
+}
+
+/* Einzelne Aufgabe */
+
+.assignment {
+  display: grid;
+
+  grid-template-columns: 80px 1fr;
+
+  gap: 30px;
+
+  padding: 32px 0;
+
+  border-bottom: 1px solid #d9d9d9;
+}
+
+.assignment-number {
+  color: #888888;
+
+  font-size: 18px;
+
+  font-weight: 600;
+}
+
+.assignment-active .assignment-number {
+  color: #1f5fa8;
+}
+
+.assignment-content {
+  max-width: 760px;
+}
+
+.assignment-title-row {
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: flex-start;
+
+  gap: 20px;
+}
+
+.assignment h3 {
+  margin: 0;
+
+  font-size: 21px;
+
+  font-weight: 600;
+}
+
+.assignment p {
+  max-width: 680px;
+
+  margin: 10px 0 0;
+
+  color: #666666;
+}
+
+
+/* Link zur Aufgabe */
+
+.assignment-link {
+  display: inline-block;
+
+  margin-top: 18px;
+
+  color: #1f5fa8;
+
+  font-weight: 600;
+
+  text-decoration: none;
+}
+
+.assignment-link span {
+  display: inline-block;
+
+  margin-left: 5px;
+
+  transition: transform 0.15s ease;
+}
+
+.assignment-link:hover {
+  text-decoration: underline;
+}
+
+.assignment-link:hover span {
+  transform: translateX(3px);
+}
+
+.assignment-link:focus-visible {
+  outline: 3px solid #7ba8da;
+
+  outline-offset: 4px;
+}
+
+/* Noch nicht veröffentlichte Aufgaben */
+
+.assignment-disabled {
+  color: #777777;
+}
+
+.assignment-disabled h3 {
+  color: #666666;
+}
+
+.assignment-disabled .assignment-number {
+  color: #aaaaaa;
+}
+
+/* Footer */
+
+.page-footer {
+  padding: 30px 0;
+
+  border-top: 1px solid #d9d9d9;
+
+  color: #777777;
+
+  font-size: 14px;
+}
+
+/* Responsive */
+
+@media (max-width: 700px) {
+  h1 {
+    font-size: 34px;
+  }
+
+  .assignment {
+    grid-template-columns: 45px 1fr;
+
+    gap: 15px;
+  }
+
+  .assignment-title-row {
+    display: block;
+  }
+}

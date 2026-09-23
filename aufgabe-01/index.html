@@ -1,0 +1,489 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Aufgabe 01 | Interaktiv animierte Scheibe</title>
+
+    <link rel="stylesheet" href="style.css" />
+
+    <script src="app.js" defer></script>
+  </head>
+
+  <body>
+    <header class="page-header">
+      <div class="container">
+        <a class="back-link" href="../">
+          <span aria-hidden="true">←</span>
+          Zur Übersicht
+        </a>
+        <p class="module-name">Graphical Visualisation Technologies</p>
+
+        <h1>Interaktiv animierte Scheibe</h1>
+
+        <p class="subtitle">Einsendeaufgabe 01 - Mert Özkan</p>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="section">
+        <div class="section-header">
+          <div>
+            <p class="section-number">01</p>
+
+            <h2>Scheibenanimation</h2>
+          </div>
+
+          <p id="discStatus" class="status">
+            Bild 1 von 24 | 0° | Automatik aus
+          </p>
+        </div>
+
+        <div class="disc-area">
+          <img
+            id="discImage"
+            src="assets/disc/frame-00.svg"
+            alt="Scheibe im Rotationszustand 0 Grad"
+          />
+        </div>
+
+        <div class="controls">
+          <button id="leftButton" type="button">
+            <span class="key">L</span>
+
+            Nach links
+          </button>
+
+          <button
+            id="autoButton"
+            type="button"
+            class="primary-button"
+            aria-pressed="false"
+          >
+            <span class="key">A</span>
+
+            <span id="autoButtonText"> Automatik starten </span>
+          </button>
+
+          <button id="rightButton" type="button">
+            <span class="key">R</span>
+
+            Nach rechts
+          </button>
+        </div>
+
+        <div class="animation-settings">
+          <div class="setting">
+            <div class="setting-header">
+              <label for="discFrameSlider"> Frame </label>
+
+              <span id="discFrameValue"> 1 / 24 </span>
+            </div>
+
+            <input
+              id="discFrameSlider"
+              type="range"
+              min="0"
+              max="23"
+              value="0"
+              step="1"
+            />
+          </div>
+
+          <div class="setting">
+            <div class="setting-header">
+              <label for="discFpsSlider"> Geschwindigkeit </label>
+
+              <span id="discFpsValue"> 10 FPS </span>
+            </div>
+
+            <input
+              id="discFpsSlider"
+              type="range"
+              min="1"
+              max="30"
+              value="10"
+              step="1"
+            />
+          </div>
+        </div>
+
+        <p class="help-text">
+          Die Scheibe kann entweder über die Tastatur oder über die
+          Schaltflächen gesteuert werden. Mit L und R wird jeweils genau ein
+          Rotationsschritt ausgeführt. Mit A wird die automatische Rotation
+          gestartet oder gestoppt.
+        </p>
+      </section>
+
+      <section class="section">
+        <div class="section-header">
+          <div>
+            <p class="section-number">02</p>
+
+            <h2>Sprite Sheet</h2>
+          </div>
+
+          <p id="spriteStatus" class="status">Bild 1 von 8 | Automatik aus</p>
+        </div>
+
+        <div class="sprite-layout">
+          <div>
+            <div
+              class="sprite-window"
+              aria-label="Animation eines springenden Roboters"
+            >
+              <img
+                id="spriteImage"
+                src="assets/sprite/robot-sprite.svg"
+                alt="Sprite Sheet eines springenden Roboters"
+              />
+            </div>
+          </div>
+
+          <div class="sprite-description">
+            <h3>Springender Roboter</h3>
+
+            <p>
+              Die Animation besteht aus acht individuell gestalteten
+              Bewegungszuständen. Alle Zustände befinden sich nebeneinander in
+              einer einzigen SVG-Datei.
+            </p>
+
+            <p>
+              JavaScript verschiebt das Sprite Sheet innerhalb eines 220 × 220
+              Pixel großen Sichtfensters. Dadurch wird jeweils nur ein einzelner
+              Animationszustand angezeigt.
+            </p>
+
+            <div class="controls">
+              <button id="spritePreviousButton" type="button">
+                <span class="key">L</span>
+                Nach links
+              </button>
+
+              <button
+                id="spriteAutoButton"
+                type="button"
+                class="primary-button"
+                aria-pressed="false"
+              >
+                <span class="key">A</span>
+
+                <span id="spriteAutoButtonText"> Automatik starten </span>
+              </button>
+
+              <button id="spriteNextButton" type="button">
+                <span class="key">R</span>
+                Nach rechts
+              </button>
+            </div>
+
+            <div class="animation-settings sprite-settings">
+              <div class="setting">
+                <div class="setting-header">
+                  <label for="spriteFrameSlider"> Frame </label>
+
+                  <span id="spriteFrameValue"> 1 / 8 </span>
+                </div>
+
+                <input
+                  id="spriteFrameSlider"
+                  type="range"
+                  min="0"
+                  max="7"
+                  value="0"
+                  step="1"
+                />
+              </div>
+
+              <div class="setting">
+                <div class="setting-header">
+                  <label for="spriteFpsSlider"> Geschwindigkeit </label>
+
+                  <span id="spriteFpsValue"> 8 FPS </span>
+                </div>
+
+                <input
+                  id="spriteFpsSlider"
+                  type="range"
+                  min="1"
+                  max="24"
+                  value="8"
+                  step="1"
+                />
+              </div>
+            </div>
+
+            <p class="help-text">
+              Die Animation kann ebenfalls über die Tastatur oder über die
+              Schaltflächen gesteuert werden. Mit L und R wird jeweils genau ein
+              Bewegungsschritt ausgeführt. Mit A wird die automatische Animation
+              gestartet oder gestoppt.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!--  <section class="section documentation">
+        <div class="section-header">
+          <div>
+            <p class="section-number">03</p>
+
+            <h2>Dokumentation</h2>
+          </div>
+        </div>
+
+        <div class="documentation-grid">
+          <article>
+            <h3>Bedienung</h3>
+
+            <p>
+              Die Tasten L und R bewegen die Scheibe um jeweils einen
+              Animationsschritt. Die Taste A startet und beendet die
+              kontinuierliche Animation.
+            </p>
+          </article>
+
+          <article>
+            <h3>Umsetzung</h3>
+
+            <p>
+              Die Scheibenanimation besteht aus 24 separaten PNG-Dateien. Jeder
+              Rotationszustand unterscheidet sich um 15 Grad vom vorherigen
+              Zustand.
+            </p>
+
+            <p>
+              Die Bilder werden mit JavaScript geladen und in einem
+              HTML-Image-Element dargestellt. Canvas und WebGL werden nicht
+              verwendet.
+            </p>
+          </article>
+
+          <article>
+            <h3>Interaktionsdesign</h3>
+
+            <p>
+              Neben der Tastatursteuerung stehen sichtbare Schaltflächen zur
+              Verfügung. Der aktuelle Zustand der Animation wird oberhalb der
+              Scheibe angezeigt.
+            </p>
+          </article>
+
+          <article>
+            <h3>Materialquellen</h3>
+
+            <p>
+              Die Grafiken der Scheibe und des animierten Objekts wurden für
+              diese Einsendeaufgabe selbst erstellt.
+            </p>
+          </article>
+
+          <article>
+            <h3>Test</h3>
+
+            <p>
+              Die Anwendung wurde hinsichtlich der Tastatursteuerung, der
+              Schaltflächen, der automatischen Animation und der zyklischen
+              Darstellung aller Einzelbilder getestet.
+            </p>
+          </article>
+        </div>
+      </section>  -->
+
+      <section class="section documentation">
+        <div class="section-header">
+          <div>
+            <p class="section-number">03</p>
+
+            <h2>Dokumentation</h2>
+          </div>
+        </div>
+
+        <div class="documentation-grid">
+          <article>
+            <h3>Aufgabenstellung</h3>
+
+            <p>
+              Ziel der Anwendung ist die Darstellung einer interaktiven
+              2D-Animation aus einzelnen Bildzuständen. Die Umsetzung erfolgt
+              ausschließlich mit HTML, CSS, JavaScript und Image-Elementen.
+            </p>
+
+            <p>Canvas und WebGL werden nicht verwendet.</p>
+          </article>
+
+          <article>
+            <h3>Scheibenanimation</h3>
+
+            <p>
+              Die Scheibe besteht aus 24 separaten SVG-Bilddateien. Jeder Frame
+              stellt einen eigenen Rotationszustand in Schritten von 15 Grad
+              dar.
+            </p>
+
+            <p>
+              JavaScript lädt die einzelnen Bilddateien vor und verändert für
+              die Animation die Quelle des HTML-Image-Elements.
+            </p>
+
+            <p>
+              Mit den Tasten L und R kann jeweils genau ein Frame vorwärts
+              beziehungsweise rückwärts geschaltet werden. Die Taste A startet
+              und stoppt die automatische Rotation.
+            </p>
+          </article>
+
+          <article>
+            <h3>Erweiterte Steuerung</h3>
+
+            <p>
+              Zusätzlich zur geforderten Tastatursteuerung stehen sichtbare
+              Schaltflächen zur Verfügung.
+            </p>
+
+            <p>
+              Über einen Frame-Regler kann jeder einzelne Rotationszustand
+              direkt ausgewählt werden. Ein weiterer Regler ermöglicht die
+              Einstellung der Animationsgeschwindigkeit in Bildern pro Sekunde
+              (FPS).
+            </p>
+
+            <p>
+              Bei einer manuellen Frame-Auswahl wird eine laufende Animation
+              angehalten. Dadurch erhält die manuelle Eingabe Vorrang vor der
+              automatischen Animation.
+            </p>
+          </article>
+
+          <article>
+            <h3>Sprite-Sheet-Animation</h3>
+
+            <p>
+              Als zusätzliche Animation wurde ein springender Roboter umgesetzt.
+            </p>
+
+            <p>
+              Die acht Bewegungszustände befinden sich nebeneinander in einer
+              einzigen SVG-Datei. Jeder Frame besitzt eine Breite von 220
+              Pixeln.
+            </p>
+
+            <p>
+              JavaScript verschiebt das vollständige Sprite Sheet horizontal
+              innerhalb eines begrenzten Sichtfensters. Dadurch ist immer genau
+              ein Animationszustand sichtbar.
+            </p>
+
+            <p>
+              Die Einzelbilder unterscheiden sich unter anderem durch die
+              Position des Roboters, die Stellung von Armen und Beinen, die
+              Körperrotation und die Größe des Schattens.
+            </p>
+          </article>
+
+          <article>
+            <h3>Interaktionsdesign</h3>
+
+            <p>
+              Bei der Gestaltung der Bedienung wurden die Anforderungen an
+              Gebrauchstauglichkeit nach ISO 9241-11 sowie die
+              Interaktionsprinzipien der ISO 9241-110 berücksichtigt.
+            </p>
+
+            <p>
+              Die Funktionen sind sowohl über sichtbare Schaltflächen als auch
+              über Tastatureingaben erreichbar. Aktueller Frame,
+              Rotationswinkel, Animationszustand und Geschwindigkeit werden
+              unmittelbar angezeigt.
+            </p>
+
+            <p>
+              Die Bedienung wurde möglichst konsistent gestaltet. Manuelle
+              Eingaben führen unmittelbar zu einer sichtbaren Rückmeldung und
+              automatische Animationen können jederzeit gestartet und gestoppt
+              werden.
+            </p>
+          </article>
+
+          <article>
+            <h3>Material</h3>
+
+            <p>
+              Die Scheibe und der Roboter wurden als eigene SVG-Grafiken für
+              diese Einsendeaufgabe erstellt. Es wurden keine externen Fotos,
+              Icons oder vorgefertigten Sprite Sheets verwendet.
+            </p>
+            <p>
+              Die Scheibe basiert auf einer selbst bearbeiteten
+              SVG-Ausgangsgrafik. Mit dem Skript generate-frames.js werden
+              daraus automatisch 24 Rotationszustände in Schritten von jeweils
+              15 Grad erzeugt. Die resultierenden Dateien frame-00.svg bis
+              frame-23.svg werden anschließend von JavaScript als Einzelbilder
+              geladen.
+            </p>
+            <p>
+              Der Roboter ist als selbst angepasstes Sprite Sheet mit acht
+              unterschiedlichen Bewegungszuständen umgesetzt. Die einzelnen
+              Zustände befinden sich nebeneinander in einer SVG-Datei und werden
+              während der Animation durch horizontales Verschieben sichtbar
+              gemacht.
+            </p>
+          </article>
+
+          <article>
+            <h3>Test und Qualitätssicherung</h3>
+
+            <p>
+              Getestet wurden die Einzelsteuerung mit L und R, das Starten und
+              Stoppen mit A, die Bedienung über die Schaltflächen sowie der
+              zyklische Wechsel zwischen erstem und letztem Frame.
+            </p>
+
+            <p>
+              Zusätzlich wurden die Frame- und FPS-Regler sowie die Steuerung
+              der Sprite-Sheet-Animation geprüft. Vor der Abgabe wird die
+              Anwendung in Google Chrome getestet und die Browserkonsole auf
+              JavaScript-Fehler kontrolliert.
+            </p>
+          </article>
+
+          <article>
+            <h3>Quellen</h3>
+
+            <ul class="source-list">
+              <li>
+                <a
+                  href="https://de.wikipedia.org/wiki/ISO_9241#ISO_9241-11_Gebrauchstauglichkeit:_Begriffe_und_Konzepte"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Wikipedia – ISO 9241-11 Gebrauchstauglichkeit
+                </a>
+              </li>
+
+              <li>
+                <a
+                  href="https://de.wikipedia.org/wiki/ISO_9241#ISO_9241-110_Interaktionsprinzipien"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Wikipedia – ISO 9241-110 Interaktionsprinzipien
+                </a>
+              </li>
+            </ul>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer class="page-footer">
+      <div class="container">
+        <p>Graphical Visualisation Technologies</p>
+      </div>
+    </footer>
+  </body>
+</html>
