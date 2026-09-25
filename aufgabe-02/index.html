@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <meta
+      name="description"
+      content="Einsendeaufgabe 02: 2D Geometrie aus Linien mit WebGL."
+    />
+
+    <title>Aufgabe 02 | 2D Geometrie aus Linien</title>
+
+    <link rel="stylesheet" href="style.css" />
+
+    <script src="app.js" defer></script>
+  </head>
+
+  <body>
+    <header class="page-header">
+      <div class="container">
+        <a class="back-link" href="../">
+          <span aria-hidden="true">←</span>
+          Zur Übersicht
+        </a>
+
+        <p class="module-name">Graphical Visualisation Technologies</p>
+
+        <h1>2D Geometrie aus Linien</h1>
+
+        <p class="subtitle">Einsendeaufgabe 02</p>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="section">
+        <div class="section-header">
+          <div>
+            <p class="section-number">01</p>
+
+            <h2>Geometrische Fuchsmaske</h2>
+          </div>
+
+          <div class="geometry-info">
+            <span>
+              <strong id="vertexCount"> – </strong>
+              Vertices
+            </span>
+
+            <span>
+              <strong id="lineCount"> – </strong>
+              Linien
+            </span>
+          </div>
+        </div>
+
+        <div class="canvas-container">
+          <canvas id="glCanvas" width="760" height="760">
+            Dein Browser unterstützt das HTML-Canvas-Element nicht.
+          </canvas>
+        </div>
+
+        <p id="webglStatus" class="status-text">WebGL wird initialisiert …</p>
+      </section>
+
+      <section class="section documentation">
+        <div class="section-header">
+          <div>
+            <p class="section-number">02</p>
+
+            <h2>Dokumentation</h2>
+          </div>
+        </div>
+
+        <div class="documentation-grid">
+          <article>
+            <h3>Geometrie</h3>
+
+            <p>
+              Die dargestellte Geometrie ist eine geometrische Fuchsmaske. Die
+              Form wurde auf einem Raster mit 20 × 20 Einheiten konstruiert.
+              Dabei wird zunächst die linke Hälfte der Hauptgeometrie definiert.
+            </p>
+
+            <p>
+              Die rechte Hälfte wird anschließend algorithmisch an der
+              vertikalen Mittelachse gespiegelt. Dadurch entsteht eine exakt
+              symmetrische Geometrie, ohne beide Seiten einzeln definieren zu
+              müssen.
+            </p>
+
+            <p>
+              Die Rasterkoordinaten werden vor der Übergabe an WebGL in den
+              Koordinatenbereich von -1 bis +1 umgerechnet.
+            </p>
+          </article>
+
+          <article>
+            <h3>Vertices und Linien</h3>
+
+            <p>
+              Die Geometrie besteht aus deutlich mehr als den geforderten 30
+              Vertices. Bei <code>gl.LINES</code> bilden jeweils zwei Vertices
+              ein unabhängiges Liniensegment.
+            </p>
+
+            <p>
+              Jeder 2D-Vertex besteht aus einer X- und einer Y-Koordinate. Die
+              Anzahl der Vertices wird daher aus der Anzahl der Werte im
+              Vertex-Array berechnet und anschließend als
+              <code>count</code>-Parameter an <code>gl.drawArrays()</code>
+              übergeben.
+            </p>
+
+            <p>
+              Die tatsächliche Anzahl der Vertices und Linien wird direkt aus
+              den Geometriedaten berechnet und oberhalb der Darstellung
+              angezeigt.
+            </p>
+          </article>
+
+          <article>
+            <h3>WebGL</h3>
+
+            <p>
+              Die erzeugten 2D-Vertex-Daten werden in
+              <code>Float32Array</code>-Objekte umgewandelt und anschließend in
+              WebGL Vertex-Buffer übertragen.
+            </p>
+
+            <p>
+              Ein einfacher Vertex- und Fragment-Shader verarbeitet Position und
+              Farbe der Geometrie. Die Darstellung erfolgt mit
+              <code>gl.drawArrays()</code> und dem Primitive-Typ
+              <code>gl.LINES</code>.
+            </p>
+          </article>
+
+          <article>
+            <h3>Linienstärke</h3>
+
+            <p>
+              Die verfügbare Linienstärke ist von der WebGL-Implementierung des
+              Browsers abhängig. Daher verwendet die Darstellung bewusst eine
+              Linienstärke von 1 und basiert in ihrem visuellen Anspruch auf der
+              Komplexität und Anordnung der Liniengeometrie.
+            </p>
+
+            <p>
+              Der vom aktuellen Browser unterstützte Bereich wird über
+              <code>gl.ALIASED_LINE_WIDTH_RANGE</code> abgefragt:
+              <strong id="lineWidthInfo">wird ermittelt</strong>
+            </p>
+          </article>
+          <article>
+            <h3>Gestaltung</h3>
+
+            <p>
+              Die Fuchsmaske ist symmetrisch aufgebaut. Außenkontur, Ohren,
+              Augenpartie, Wangen, Schnauze, Barthaare und Kinn bestehen aus
+              einzelnen geometrischen Liniensegmenten.
+            </p>
+
+            <p>
+              Die Hauptgeometrie wird dunkel dargestellt. Pupillen und Nase
+              bilden eine separate Liniengeometrie und werden mit einer blauen
+              Akzentfarbe gerendert. Dadurch entsteht trotz der ausschließlichen
+              Verwendung von Linien eine visuelle Hierarchie.
+            </p>
+          </article>
+
+          <article>
+            <h3>Test und Qualitätssicherung</h3>
+
+            <p>
+              Vor der Abgabe wurde die Anwendung in Google Chrome getestet.
+              Zusätzlich wurde die Browserkonsole auf Shader-, WebGL- und
+              JavaScript-Fehler überprüft.
+            </p>
+          </article>
+
+          <article>
+            <h3>Material und Quellen</h3>
+
+            <p>
+              Die dargestellte Fuchsgeometrie wurde speziell für diese Aufgabe
+              konstruiert. Es wurde keine externe Bildvorlage oder fertige
+              Vektorgrafik verwendet.
+            </p>
+
+            <p>
+              Die symmetrische rechte Hälfte der Hauptgeometrie wird
+              algorithmisch aus der linken Hälfte erzeugt.
+            </p>
+
+            <ul class="source-list">
+              <li>
+                <a
+                  href="https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/drawArrays"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  MDN Web Docs – WebGLRenderingContext.drawArrays()
+                </a>
+              </li>
+
+              <li>
+                <a
+                  href="https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Constants"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  MDN Web Docs – WebGL Constants
+                </a>
+              </li>
+            </ul>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer class="page-footer">
+      <div class="container">
+        <p>Graphical Visualisation Technologies</p>
+      </div>
+    </footer>
+  </body>
+</html>
