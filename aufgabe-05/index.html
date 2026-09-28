@@ -1,0 +1,596 @@
+<!doctype html>
+
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <meta
+      name="description"
+      content="Einsendeaufgabe 05: Kamerabewegung und rekursives Kugelmodell mit WebGL."
+    />
+
+    <title>Aufgabe 05 | Kamerabewegung</title>
+
+    <link rel="stylesheet" href="style.css" />
+
+    <script src="../ext/gl-matrix.js" defer></script>
+
+    <script src="app.js" defer></script>
+  </head>
+
+  <body>
+    <header class="page-header">
+      <div class="container">
+        <a class="back-link" href="../">
+          <span aria-hidden="true">←</span>
+          Zur Übersicht
+        </a>
+
+        <p class="module-name">Graphical Visualisation Technologies</p>
+
+        <h1>Kamerabewegung</h1>
+
+        <p class="subtitle">Einsendeaufgabe 05</p>
+      </div>
+    </header>
+
+    <main class="container">
+      <!-- ==================================================
+         AUFGABENBESCHREIBUNG
+         ================================================== -->
+
+      <section class="section introduction">
+        <div class="section-header">
+          <div>
+            <p class="section-number">01</p>
+
+            <h2>Interaktive 3D-Szene</h2>
+          </div>
+        </div>
+
+        <p>
+          Die Szene besteht aus einem Würfel, einem parametrisch erzeugten Torus
+          und einem rekursiv erzeugten Kugelmodell. Eine virtuelle Kamera kann
+          auf einer Kreisbahn um die gemeinsame Szene bewegt werden.
+        </p>
+
+        <p>
+          Die Kameraposition wird über eine View-Transformation mit
+          <code>mat4.lookAt()</code> berechnet. Die rekursive Kugel entsteht aus
+          einem Oktaeder, dessen Dreiecke schrittweise unterteilt und deren neue
+          Kantenmittelpunkte auf die Oberfläche einer Einheitskugel normalisiert
+          werden.
+        </p>
+      </section>
+
+      <!-- ==================================================
+         BEDIENUNG
+         ================================================== -->
+
+      <section class="section">
+        <div class="section-header">
+          <div>
+            <p class="section-number">02</p>
+
+            <h2>Bedienung</h2>
+          </div>
+        </div>
+
+        <div class="interaction-grid">
+          <article class="interaction-card">
+            <kbd>←</kbd>
+
+            <div>
+              <strong> Kamera nach links </strong>
+
+              <p>Bewegt die Kamera auf ihrer Kreisbahn um die Szene.</p>
+            </div>
+          </article>
+
+          <article class="interaction-card">
+            <kbd>→</kbd>
+
+            <div>
+              <strong> Kamera nach rechts </strong>
+
+              <p>
+                Bewegt die Kamera auf der Kreisbahn in die entgegengesetzte
+                Richtung.
+              </p>
+            </div>
+          </article>
+
+          <article class="interaction-card">
+            <kbd>N</kbd>
+
+            <div>
+              <strong> Radius verkleinern </strong>
+
+              <p>Verringert den Abstand zwischen Kamera und Szene.</p>
+            </div>
+          </article>
+
+          <article class="interaction-card">
+            <div class="key-combination">
+              <kbd>Shift</kbd>
+
+              <span> + </span>
+
+              <kbd>N</kbd>
+            </div>
+
+            <div>
+              <strong> Radius vergrößern </strong>
+
+              <p>Vergrößert den Abstand zwischen Kamera und Szene.</p>
+            </div>
+          </article>
+        </div>
+
+        <p class="section-description">
+          Zusätzlich kann die automatische Kamerafahrt über
+          <strong>Auto-Rotation pausieren</strong> pausiert und wieder gestartet
+          werden. Die Rekursionstiefe der Kugel wird mit den Schaltflächen
+          <strong>−</strong> und <strong>+</strong> eingestellt. Über
+          <strong>Fläche + Linien</strong> und <strong>Nur Linien</strong> lässt
+          sich die Darstellung des rekursiven Kugelmodells umschalten.
+        </p>
+      </section>
+
+      <!-- ==================================================
+         WEBGL-SZENE
+         ================================================== -->
+
+      <section class="section">
+        <div class="section-header">
+          <div>
+            <p class="section-number">03</p>
+
+            <h2>Szene</h2>
+
+            <p class="section-description">
+              Würfel, Torus und rekursives Kugelmodell
+            </p>
+          </div>
+        </div>
+
+        <div class="scene-layout">
+          <div class="canvas-container">
+            <canvas id="sceneCanvas" width="1000" height="650">
+              Dein Browser unterstützt Canvas nicht.
+            </canvas>
+          </div>
+
+          <aside class="control-panel">
+            <!-- Kamera -->
+
+            <section class="control-group">
+              <h3>Kamera</h3>
+
+              <div class="status-list">
+                <div class="status-row">
+                  <span> Winkel </span>
+
+                  <strong id="cameraAngle"> 0° </strong>
+                </div>
+
+                <div class="status-row">
+                  <span> Radius </span>
+
+                  <strong id="cameraDistance"> 8.0 </strong>
+                </div>
+
+                <div class="status-row status-row-vector">
+                  <span> Eye </span>
+
+                  <strong id="cameraEye"> (0.00, 3.00, 8.00) </strong>
+                </div>
+              </div>
+
+              <button
+                id="toggleAutoRotation"
+                class="control-button auto-rotation-button"
+                type="button"
+                aria-pressed="false"
+              >
+                Auto-Rotation starten
+              </button>
+
+              <p class="auto-rotation-info">
+                Optionale automatische Kamerafahrt auf derselben Kreisbahn wie
+                bei der manuellen Steuerung.
+              </p>
+            </section>
+
+            <!-- Rekursion -->
+
+            <section class="control-group">
+              <h3>Rekursive Kugel</h3>
+
+              <p class="control-description">Rekursionstiefe</p>
+
+              <div class="recursion-control">
+                <button
+                  id="decreaseRecursion"
+                  class="control-button square-button"
+                  type="button"
+                  aria-label="Rekursionstiefe verringern"
+                >
+                  −
+                </button>
+
+                <output
+                  id="recursionDepth"
+                  class="recursion-value"
+                  aria-live="polite"
+                >
+                  2
+                </output>
+
+                <button
+                  id="increaseRecursion"
+                  class="control-button square-button"
+                  type="button"
+                  aria-label="Rekursionstiefe erhöhen"
+                >
+                  +
+                </button>
+              </div>
+
+              <div class="status-list recursion-stats">
+                <div class="status-row">
+                  <span> Dreiecke </span>
+
+                  <strong id="sphereTriangleCount"> 128 </strong>
+                </div>
+
+                <div class="status-row">
+                  <span> Vertices </span>
+
+                  <strong id="sphereVertexCount"> 384 </strong>
+                </div>
+              </div>
+            </section>
+
+            <!-- Darstellungsmodus -->
+
+            <section class="control-group">
+              <h3>Kugeldarstellung</h3>
+
+              <div class="mode-buttons">
+                <button
+                  class="control-button mode-button"
+                  type="button"
+                  data-mode="combined"
+                >
+                  Fläche + Linien
+                </button>
+
+                <button
+                  class="control-button mode-button"
+                  type="button"
+                  data-mode="wireframe"
+                >
+                  Nur Linien
+                </button>
+              </div>
+            </section>
+          </aside>
+        </div>
+      </section>
+
+      <!-- ==================================================
+         KAMERAMODELL
+         ================================================== -->
+
+      <section class="section">
+        <div class="section-header">
+          <div>
+            <p class="section-number">04</p>
+
+            <h2>Kameramodell</h2>
+          </div>
+        </div>
+
+        <div class="documentation-grid">
+          <article>
+            <h3>Kreisbahn</h3>
+
+            <p>
+              Die Kamera bewegt sich auf einer horizontalen Kreisbahn um die
+              Y-Achse. Die x- und z-Koordinaten beschreiben die Kreisbewegung,
+              während die y-Koordinate über die konstante Kamerahöhe
+              <code>h</code> unabhängig vom Radius festgelegt wird.
+            </p>
+
+            <div class="formula-block">
+              <p>x<sub>eye</sub> = x<sub>center</sub> + r · sin(α)</p>
+
+              <p>y<sub>eye</sub> = h</p>
+
+              <p>z<sub>eye</sub> = z<sub>center</sub> + r · cos(α)</p>
+            </div>
+
+            <p>
+              <code>r</code> bezeichnet den Kameraradius, <code>α</code> den
+              aktuellen Winkel und <code>h</code> die unabhängig vom Radius
+              festgelegte Kamerahöhe.
+            </p>
+          </article>
+
+          <article>
+            <h3>View-Transformation</h3>
+
+            <p>
+              Aus Kameraposition, Zielpunkt und Up-Vektor wird die View-Matrix
+              berechnet.
+            </p>
+
+            <pre><code>mat4.lookAt(
+  camera.vMatrix,
+  camera.eye,
+  camera.center,
+  camera.up
+);</code></pre>
+
+            <p>
+              Der Up-Vektor <code>(0, 1, 0)</code> definiert die positive
+              Y-Richtung als obere Richtung der virtuellen Kamera.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <!-- ==================================================
+         REKURSIVES KUGELMODELL
+         ================================================== -->
+
+      <section class="section">
+        <div class="section-header">
+          <div>
+            <p class="section-number">05</p>
+
+            <h2>Rekursives Kugelmodell</h2>
+          </div>
+        </div>
+
+        <div class="documentation-grid">
+          <article>
+            <h3>Ausgangsgeometrie</h3>
+
+            <p>
+              Die Kugel basiert auf einem Oktaeder mit sechs Eckpunkten und acht
+              Dreiecksflächen.
+            </p>
+
+            <p>
+              Die sechs Eckpunkte des Ausgangskörpers liegen auf einer
+              Einheitskugel mit Radius 1. Bei Rekursionstiefe 0 bleibt deshalb
+              der ursprüngliche Oktaeder sichtbar.
+            </p>
+          </article>
+
+          <article>
+            <h3>Rekursive Unterteilung</h3>
+
+            <p>
+              In jedem Rekursionsschritt werden die drei Kantenmittelpunkte
+              eines Dreiecks berechnet. Aus einem Dreieck entstehen anschließend
+              vier kleinere Dreiecke.
+            </p>
+
+            <p>
+              Die neu berechneten Mittelpunkte liegen zunächst innerhalb der
+              Kugel. Durch Normalisierung werden sie wieder auf die Oberfläche
+              der Einheitskugel projiziert. Mit zunehmender Rekursionstiefe
+              nähert sich die Geometrie dadurch immer stärker einer Kugelform
+              an.
+            </p>
+          </article>
+
+          <article>
+            <h3>Anzahl der Dreiecke</h3>
+
+            <p>
+              Da der Oktaeder acht Ausgangsdreiecke besitzt und jedes Dreieck
+              pro Rekursionsstufe in vier neue Dreiecke zerlegt wird, gilt:
+            </p>
+
+            <div class="formula-block">
+              <p>A(n) = 8 · 4<sup>n</sup></p>
+
+              <p>A(n) = 8 · 2<sup>2n</sup></p>
+            </div>
+
+            <p>
+              Bei Rekursionstiefe 0 entstehen 8 Dreiecke, bei Tiefe 1 insgesamt
+              32, bei Tiefe 2 insgesamt 128 und bei der maximal verwendeten
+              Tiefe 5 insgesamt 8192 Dreiecke.
+            </p>
+          </article>
+
+          <article>
+            <h3>Darstellung</h3>
+
+            <p>
+              Die Kugel wird mit algorithmisch bestimmten Vertex-Farben gefüllt
+              dargestellt. Die Farbe verändert sich abhängig von der vertikalen
+              Position eines Kugelpunkts von Violett über Blau bis Türkis.
+            </p>
+
+            <p>
+              Zusätzlich wird ein Drahtgitter über die Dreiecksstruktur gelegt,
+              damit die rekursive Unterteilung sichtbar bleibt. Alternativ kann
+              eine reine Liniendarstellung gewählt werden.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <!-- ==================================================
+         TECHNISCHE UMSETZUNG
+         ================================================== -->
+
+      <section class="section documentation">
+        <div class="section-header">
+          <div>
+            <p class="section-number">06</p>
+
+            <h2>Dokumentation</h2>
+          </div>
+        </div>
+
+        <div class="documentation-grid">
+          <article>
+            <h3>Szene</h3>
+
+            <p>
+              Die Szene enthält einen Würfel, einen parametrisch erzeugten Torus
+              und das rekursive Kugelmodell. Eine Bodenfläche dient zusätzlich
+              als räumliche Orientierung.
+            </p>
+
+            <p>
+              Der Torus wird algorithmisch über zwei Parameter
+              <code>u</code> und <code>v</code> erzeugt:
+            </p>
+
+            <div class="formula-block">
+              <p>x = (R + r · cos(v)) · cos(u)</p>
+
+              <p>y = r · sin(v)</p>
+
+              <p>z = (R + r · cos(v)) · sin(u)</p>
+            </div>
+
+            <p>
+              Dabei bezeichnet <code>R</code> den großen Radius des Torus und
+              <code>r</code> den Radius seines kreisförmigen Querschnitts.
+            </p>
+          </article>
+
+          <article>
+            <h3>Transformationen</h3>
+
+            <p>
+              Jeder Körper besitzt eine eigene Model-Matrix. Die Kamera liefert
+              die View-Matrix und eine perspektivische Projektion erzeugt die
+              Projection-Matrix.
+            </p>
+
+            <p>
+              Ein Vertex wird zunächst durch die Model-Matrix in der Szene
+              positioniert, anschließend durch die View-Matrix relativ zur
+              Kamera transformiert und schließlich durch die Projection-Matrix
+              perspektivisch abgebildet.
+            </p>
+
+            <p>
+              Im Vertex-Shader ergibt sich daraus die Multiplikation
+              <code>Projection · View · Model · Position</code>.
+            </p>
+          </article>
+
+          <article>
+            <h3>Interaktion</h3>
+
+            <p>
+              Die Pfeiltasten links und rechts verändern den Winkel der Kamera
+              auf ihrer Kreisbahn. Die Taste
+              <code>N</code> verkleinert den Kameraradius.
+              <code>Shift + N</code> vergrößert ihn.
+            </p>
+
+            <p>
+              Die Rekursionstiefe der Kugel wird über die Plus- und
+              Minus-Schaltflächen direkt auf der Webseite verändert. Bei jeder
+              Änderung wird die Kugelgeometrie entsprechend der neuen
+              Rekursionstiefe neu erzeugt.
+            </p>
+
+            <p>
+              Zusätzlich kann über die Schaltfläche
+              <strong>Auto-Rotation</strong> eine langsame automatische
+              Kamerafahrt auf derselben Kreisbahn gestartet oder pausiert
+              werden.
+            </p>
+
+            <p>
+              Die vorgeschriebene manuelle Steuerung über die Pfeiltasten bleibt
+              vollständig erhalten. Bei manueller Änderung des Kamerawinkels
+              wird die automatische Rotation pausiert.
+            </p>
+          </article>
+
+          <article>
+            <h3>Test und Qualitätssicherung</h3>
+
+            <p>
+              Getestet wurden die vollständige 360-Grad-Bewegung der Kamera,
+              beide Radiusänderungen, die automatische Kamerafahrt, sämtliche
+              Rekursionstiefen von 0 bis 5 sowie beide Darstellungsmodi der
+              Kugel.
+            </p>
+
+            <p>
+              Zusätzlich wurden die erzeugten Dreieckszahlen mit der Formel
+              <code>A(n) = 8 · 4ⁿ</code> abgeglichen. Die Browserkonsole wurde
+              in Google Chrome auf JavaScript-, Shader- und WebGL-Fehler
+              überprüft.
+            </p>
+          </article>
+
+          <article>
+            <h3>Quellen und verwandtes Material</h3>
+
+            <ul class="source-list">
+              <li>
+                Lerneinheit GRU: rekursives Kugelmodell und
+                <code>A(n) = 8 · 4ⁿ</code>
+              </li>
+
+              <li>
+                Lerneinheit KAP: Kamerabewegung und
+                <code>mat4.lookAt()</code>
+              </li>
+
+              <li>
+                glMatrix 2.2.0 aus dem bereitgestellten Lehrmaterial: Matrix-
+                und Vektoroperationen für Model-, View- und
+                Projection-Transformationen.
+              </li>
+
+              <li>
+                <a
+                  href="http://blog.andreaskahler.com/2009/06/creating-icosphere-mesh-in-code.html"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Andreas Kahler – Creating an Icosphere Mesh in Code
+                </a>
+              </li>
+
+              <li>
+                <a
+                  href="http://paulbourke.net/geometry/circlesphere/csource3.c"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Paul Bourke – Sphere generation source code
+                </a>
+              </li>
+            </ul>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer class="page-footer">
+      <div class="container">
+        <p>Graphical Visualisation Technologies</p>
+      </div>
+    </footer>
+  </body>
+</html>
