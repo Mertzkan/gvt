@@ -349,18 +349,48 @@ const vertexShaderSource = `
     attribute vec3 aColor;
 
 
+    uniform float uRotationAngle;
+
+
     varying vec3 vColor;
 
 
     void main() {
 
-        gl_Position = vec4(
-            aPosition,
-            1.0
-        );
+        float c =
+            cos(uRotationAngle);
+
+        float s =
+            sin(uRotationAngle);
 
 
-        vColor = aColor;
+        /*
+            Rotation um die Y-Achse.
+        */
+
+        vec3 rotatedPosition =
+            vec3(
+
+                c * aPosition.x +
+                s * aPosition.z,
+
+                aPosition.y,
+
+                -s * aPosition.x +
+                c * aPosition.z
+
+            );
+
+
+        gl_Position =
+            vec4(
+                rotatedPosition,
+                1.0
+            );
+
+
+        vColor =
+            aColor;
 
     }
 
@@ -519,6 +549,11 @@ function createSurfaceRenderer(canvas, geometry) {
     'uUseSolidColor',
   );
 
+  const rotationAngleLocation = gl.getUniformLocation(
+    program,
+    'uRotationAngle',
+  );
+
   let mode = 'combined';
 
   /*
@@ -527,7 +562,7 @@ function createSurfaceRenderer(canvas, geometry) {
         --------------------------------------------------
     */
 
-  function render() {
+  function render(rotationAngle = 0) {
     gl.viewport(0, 0, canvas.width, canvas.height);
 
     gl.clearColor(0.973, 0.973, 0.973, 1.0);
@@ -539,6 +574,8 @@ function createSurfaceRenderer(canvas, geometry) {
     gl.depthFunc(gl.LEQUAL);
 
     gl.useProgram(program);
+
+    gl.uniform1f(rotationAngleLocation, rotationAngle);
 
     /*
             Positionen
@@ -623,14 +660,14 @@ function createSurfaceRenderer(canvas, geometry) {
 
   function setMode(newMode) {
     mode = newMode;
-
-    render();
   }
 
   render();
 
   return {
     setMode: setMode,
+
+    render: render,
   };
 }
 
@@ -909,3 +946,68 @@ for (const button of viewButtons) {
     button.classList.add('active');
   });
 }
+
+/*
+    ==================================================
+    ROTATIONSANIMATION
+    ==================================================
+*/
+
+const rotationButton = document.querySelector('#rotationButton');
+
+let rotationEnabled = true;
+
+let rotationAngle = 0;
+
+let previousTime = null;
+
+function animate(currentTime) {
+  /*
+        Beim ersten Aufruf gibt es noch
+        keinen vorherigen Zeitwert.
+    */
+
+  if (previousTime === null) {
+    previousTime = currentTime;
+  }
+
+  const deltaTime = currentTime - previousTime;
+
+  previousTime = currentTime;
+
+  /*
+        Nur wenn die Rotation aktiviert ist,
+        wird der Winkel verändert.
+    */
+
+  if (rotationEnabled) {
+    rotationAngle += deltaTime * 0.00022;
+  }
+
+  /*
+        Alle drei Oberflächen mit demselben
+        Winkel neu darstellen.
+    */
+
+  renderers.dini.render(rotationAngle);
+
+  renderers.tritorus.render(rotationAngle);
+
+  renderers.wave.render(rotationAngle);
+
+  requestAnimationFrame(animate);
+}
+
+rotationButton.addEventListener('click', function () {
+  rotationEnabled = !rotationEnabled;
+
+  rotationButton.setAttribute('aria-pressed', String(rotationEnabled));
+
+  if (rotationEnabled) {
+    rotationButton.textContent = 'Rotation pausieren';
+  } else {
+    rotationButton.textContent = 'Rotation fortsetzen';
+  }
+});
+
+requestAnimationFrame(animate);
