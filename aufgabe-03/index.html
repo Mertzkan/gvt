@@ -39,7 +39,7 @@
           <div>
             <p class="section-number">01</p>
 
-            <h2>Low Poly Fuchs</h2>
+            <h2>Low-Poly-Fuchs</h2>
           </div>
 
           <div class="geometry-info">
@@ -94,9 +94,10 @@
             <h3>Dreiecke und Indizes</h3>
 
             <p>
-              Die Oberfläche besteht ausschließlich aus Dreiecken. Jedes Dreieck
-              besitzt drei Vertices und wird über einen Index-Buffer mit
-              <code>gl.drawElements()</code> gerendert.
+              Die Oberfläche besteht ausschließlich aus Dreiecken. Die
+              Dreiecksgeometrie wird über einen Index-Buffer organisiert und mit
+              <code>gl.drawElements()</code> gerendert. Jeweils drei Indizes
+              beschreiben dabei ein Dreieck.
             </p>
 
             <p>
@@ -139,9 +140,9 @@
             <h3>WebGL</h3>
 
             <p>
-              Positionen und Farben werden in getrennten WebGL-Buffern
-              gespeichert. Ein Vertex-Shader verarbeitet Position und
-              Vertex-Farbe.
+              Positionen, Farben und Indizes werden in getrennten WebGL-Buffern
+              gespeichert. Der Vertex-Shader verarbeitet Position und
+              Vertex-Farbe und gibt die Farbe an den Fragment-Shader weiter.
             </p>
 
             <p>
@@ -155,7 +156,7 @@
 
             <p>
               Die Anwendung prüft die Konsistenz der Geometriedaten vor dem
-              Rendern. Zusätzlich wird die Anwendung in Google Chrome getestet
+              Rendern. Zusätzlich wurde die Anwendung in Google Chrome getestet
               und die Browserkonsole auf JavaScript-, Shader- und WebGL-Fehler
               überprüft.
             </p>
@@ -166,8 +167,10 @@
 
             <p>
               Die dargestellte Fuchsgeometrie wurde speziell für diese
-              Aufgabenserie konstruiert. Es wurde keine externe Bildvorlage oder
-              fertige Vektorgrafik verwendet.
+              Aufgabenserie konstruiert. Die Liniengeometrie aus Einsendeaufgabe
+              02 diente dabei als gestalterische Grundlage und wurde für diese
+              Aufgabe als gefüllte Dreiecksgeometrie neu aufgebaut. Es wurde
+              keine externe Bildvorlage oder fertige Vektorgrafik verwendet.
             </p>
 
             <ul class="source-list">

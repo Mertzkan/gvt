@@ -1,0 +1,436 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <meta
+      name="description"
+      content="Einsendeaufgabe 04: Parametrisierte Flächen mit WebGL."
+    />
+
+    <title>Aufgabe 04 | Parametrisierte Flächen</title>
+
+    <link rel="stylesheet" href="style.css" />
+
+    <script src="app.js" defer></script>
+  </head>
+
+  <body>
+    <header class="page-header">
+      <div class="container">
+        <a class="back-link" href="../">
+          <span aria-hidden="true">←</span>
+          Zur Übersicht
+        </a>
+
+        <p class="module-name">Graphical Visualisation Technologies</p>
+
+        <h1>Parametrisierte Flächen</h1>
+
+        <p class="subtitle">Einsendeaufgabe 04</p>
+      </div>
+    </header>
+
+    <main class="container">
+      <!-- ==================================================
+             FLÄCHE 1
+             ================================================== -->
+
+      <section class="section">
+        <div class="section-header">
+          <div>
+            <p class="section-number">01</p>
+
+            <h2>Dini-Fläche</h2>
+
+            <p class="surface-type">
+              Parametrisierte Fläche aus externer Quelle
+            </p>
+          </div>
+
+          <div class="surface-stats">
+            <span>
+              <strong id="diniVertexCount">–</strong>
+              Vertices
+            </span>
+
+            <span>
+              <strong id="diniTriangleCount">–</strong>
+              Dreiecke
+            </span>
+          </div>
+        </div>
+
+        <div class="canvas-container">
+          <canvas id="diniCanvas" width="700" height="560">
+            Dein Browser unterstützt Canvas nicht.
+          </canvas>
+        </div>
+
+        <div class="view-controls">
+          <span class="control-label"> Darstellung: </span>
+
+          <button
+            class="view-button"
+            type="button"
+            data-surface="dini"
+            data-mode="wireframe"
+          >
+            Nur Linien
+          </button>
+
+          <button
+            class="view-button active"
+            type="button"
+            data-surface="dini"
+            data-mode="combined"
+          >
+            Fläche + Linien
+          </button>
+        </div>
+
+        <div class="formula-block">
+          <h3>Parametrisierung</h3>
+
+          <p>x(u,v) = a · cos(u) · sin(v)</p>
+
+          <p>y(u,v) = a · sin(u) · sin(v)</p>
+
+          <p>z(u,v) = a · [cos(v) + ln(tan(v / 2))] + b · u</p>
+
+          <p class="parameter-info">
+            u ∈ [0, 4π], v ∈ [0.25, 2.0], a = 1, b = 0.2
+          </p>
+
+          <p>
+            Quelle:
+            <a
+              href="https://mathworld.wolfram.com/DinisSurface.html"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Wolfram MathWorld – Dini's Surface
+            </a>
+          </p>
+        </div>
+      </section>
+
+      <!-- ==================================================
+             FLÄCHE 2
+             ================================================== -->
+
+      <section class="section">
+        <div class="section-header">
+          <div>
+            <p class="section-number">02</p>
+
+            <h2>Triaxial Tritorus</h2>
+
+            <p class="surface-type">
+              Parametrisierte Fläche aus dem Aufgabenmaterial
+            </p>
+          </div>
+
+          <div class="surface-stats">
+            <span>
+              <strong id="tritorusVertexCount">–</strong>
+              Vertices
+            </span>
+
+            <span>
+              <strong id="tritorusTriangleCount">–</strong>
+              Dreiecke
+            </span>
+          </div>
+        </div>
+
+        <div class="canvas-container">
+          <canvas id="tritorusCanvas" width="700" height="560">
+            Dein Browser unterstützt Canvas nicht.
+          </canvas>
+        </div>
+
+        <div class="view-controls">
+          <span class="control-label"> Darstellung: </span>
+
+          <button
+            class="view-button"
+            type="button"
+            data-surface="tritorus"
+            data-mode="wireframe"
+          >
+            Nur Linien
+          </button>
+
+          <button
+            class="view-button active"
+            type="button"
+            data-surface="tritorus"
+            data-mode="combined"
+          >
+            Fläche + Linien
+          </button>
+        </div>
+
+        <div class="formula-block">
+          <h3>Parametrisierung</h3>
+
+          <p>x(u,v) = sin(u) · [1 + cos(v)]</p>
+
+          <p>y(u,v) = sin(u + 2π/3) · [1 + cos(v + 2π/3)]</p>
+
+          <p>z(u,v) = sin(u + 4π/3) · [1 + cos(v + 4π/3)]</p>
+
+          <p class="parameter-info">u ∈ [-π, π], v ∈ [-π, π]</p>
+
+          <p>
+            Quelle:
+            <a
+              href="https://www.3d-meier.de/tut3/Seite74.html"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              3d-meier.de – Triaxial Tritorus
+            </a>
+          </p>
+        </div>
+      </section>
+
+      <!-- ==================================================
+             EIGENE PARAMETRISIERUNG
+             ================================================== -->
+
+      <section class="section">
+        <div class="section-header">
+          <div>
+            <p class="section-number">03</p>
+
+            <div class="own-title">
+              <h2>Fünfblatt-Wellenband</h2>
+
+              <span class="own-badge"> Eigene Parametrisierung </span>
+            </div>
+
+            <p class="surface-type">
+              Für diese Einsendeaufgabe entwickelte Fläche
+            </p>
+          </div>
+
+          <div class="surface-stats">
+            <span>
+              <strong id="waveVertexCount">–</strong>
+              Vertices
+            </span>
+
+            <span>
+              <strong id="waveTriangleCount">–</strong>
+              Dreiecke
+            </span>
+          </div>
+        </div>
+
+        <div class="canvas-container">
+          <canvas id="waveCanvas" width="700" height="560">
+            Dein Browser unterstützt Canvas nicht.
+          </canvas>
+        </div>
+
+        <div class="view-controls">
+          <span class="control-label"> Darstellung: </span>
+
+          <button
+            class="view-button"
+            type="button"
+            data-surface="wave"
+            data-mode="wireframe"
+          >
+            Nur Linien
+          </button>
+
+          <button
+            class="view-button active"
+            type="button"
+            data-surface="wave"
+            data-mode="combined"
+          >
+            Fläche + Linien
+          </button>
+        </div>
+
+        <div class="formula-block">
+          <h3>Eigene Parametrisierung</h3>
+
+          <p>R(u) = 0.50 + 0.08 · cos(5u)</p>
+
+          <p>x(u,v) = c · [R(u) + 0.16v · cos(3u)] · cos(u)</p>
+
+          <p>y(u,v) = c · [0.22 · sin(5u) + 0.18v · sin(3u)]</p>
+
+          <p>z(u,v) = c · [R(u) + 0.16v · cos(3u)] · sin(u)</p>
+
+          <p class="parameter-info">
+            u ∈ [0, 2π], v ∈ [-1, 1], c = automatisch bestimmter
+            Skalierungsfaktor
+          </p>
+          <p>
+            Die fünffache Modulation mit
+            <code>cos(5u)</code> und <code>sin(5u)</code> erzeugt die
+            blattartige Wellenstruktur. Der Parameter <code>v</code> steuert die
+            Breite und zusätzliche Verformung des Bandes.
+          </p>
+        </div>
+      </section>
+
+      <!-- ==================================================
+             DOKUMENTATION
+             ================================================== -->
+
+      <section class="section documentation">
+        <div class="section-header">
+          <div>
+            <p class="section-number">04</p>
+
+            <h2>Dokumentation</h2>
+          </div>
+        </div>
+
+        <div class="documentation-grid">
+          <article>
+            <h3>Algorithmische Erzeugung</h3>
+
+            <p>
+              Jede Fläche wird aus zwei Parametern
+              <code>u</code> und <code>v</code>
+              algorithmisch erzeugt. Die Parameterbereiche werden in ein
+              regelmäßiges Raster unterteilt.
+            </p>
+
+            <p>
+              Für jede Kombination aus u und v berechnet die jeweilige
+              Parametrisierung einen dreidimensionalen Punkt mit den Koordinaten
+              x, y und z.
+            </p>
+          </article>
+
+          <article>
+            <h3>Dreiecke und Drahtgitter</h3>
+
+            <p>
+              Benachbarte Rasterpunkte werden zu Dreiecken verbunden und als
+              gefüllte Oberfläche mit
+              <code>gl.TRIANGLES</code> dargestellt.
+            </p>
+
+            <p>
+              Zusätzlich werden die Verbindungen entlang der Parameterachsen als
+              Linienindizes erzeugt. Dadurch kann dieselbe Geometrie auch als
+              Drahtgitter mit <code>gl.LINES</code>
+              dargestellt werden.
+            </p>
+          </article>
+
+          <article>
+            <h3>Kolorierung</h3>
+
+            <p>
+              Die Vertex-Farben werden für jede Fläche algorithmisch aus den
+              Parametern und der Position auf der Oberfläche berechnet.
+            </p>
+
+            <p>
+              Die Farben werden im Fragment-Shader zwischen den Eckpunkten der
+              Dreiecke interpoliert. Dadurch entstehen kontinuierliche
+              Farbverläufe auf den Oberflächen.
+            </p>
+          </article>
+
+          <article>
+            <h3>Skalierung und NDC</h3>
+
+            <p>
+              Die erzeugten dreidimensionalen Punkte werden vor dem Rendern
+              automatisch skaliert, sodass die sichtbare Geometrie innerhalb des
+              Normalized-Device-Coordinate-Bereichs von -1 bis +1 liegt.
+            </p>
+
+            <p>
+              Für eine räumlich verständliche Darstellung werden die Flächen
+              zusätzlich um feste Winkel gedreht. Ein Kamerasystem wird nicht
+              verwendet.
+            </p>
+          </article>
+
+          <article>
+            <h3>Eigene Parametrisierung</h3>
+
+            <p>
+              Das Fünfblatt-Wellenband wurde für diese Aufgabe aus mehreren
+              trigonometrischen Termen zusammengesetzt. Kreisförmige
+              Grundbewegung, fünffache Wellenmodulation und eine vom Parameter v
+              abhängige Verformung werden miteinander kombiniert.
+            </p>
+          </article>
+
+          <article>
+            <h3>Test und Qualitätssicherung</h3>
+
+            <p>
+              Getestet werden die drei WebGL-Darstellungen, die Umschaltung
+              zwischen Drahtgitter und gefüllter Oberfläche sowie die korrekte
+              Darstellung aller Index- und Vertexdaten.
+            </p>
+
+            <p>
+              Vor der Abgabe wird die Browserkonsole in Google Chrome auf
+              JavaScript-, Shader- und WebGL-Fehler überprüft.
+            </p>
+          </article>
+
+          <article>
+            <h3>Quellen</h3>
+
+            <ul class="source-list">
+              <li>
+                <a
+                  href="https://mathworld.wolfram.com/DinisSurface.html"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Wolfram MathWorld – Dini's Surface
+                </a>
+              </li>
+
+              <li>
+                <a
+                  href="https://www.3d-meier.de/tut3/Seite74.html"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  3d-meier.de – Triaxial Tritorus
+                </a>
+              </li>
+
+              <li>
+                <a
+                  href="https://stemkoski.github.io/Three.js/Graphulus-Surface.html"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Graphulus – Parametric Surface
+                </a>
+              </li>
+            </ul>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer class="page-footer">
+      <div class="container">
+        <p>Graphical Visualisation Technologies</p>
+      </div>
+    </footer>
+  </body>
+</html>
