@@ -1,0 +1,282 @@
+* {
+  box-sizing: border-box;
+}
+
+html {
+  font-family: Arial, Helvetica, sans-serif;
+
+  color: #1a1a1a;
+
+  background-color: #ffffff;
+}
+
+body {
+  margin: 0;
+
+  line-height: 1.6;
+}
+
+.container {
+  width: min(1000px, calc(100% - 40px));
+
+  margin: 0 auto;
+}
+
+/* Kopfbereich */
+
+.page-header {
+  padding: 60px 0 40px;
+
+  border-bottom: 1px solid #d9d9d9;
+}
+
+.back-link {
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 7px;
+
+  margin-bottom: 30px;
+
+  color: #1f5fa8;
+
+  font-size: 14px;
+  font-weight: 600;
+
+  text-decoration: none;
+}
+
+.back-link:hover {
+  text-decoration: underline;
+}
+
+.back-link:focus-visible {
+  outline: 3px solid #7ba8da;
+
+  outline-offset: 3px;
+}
+
+.module-name {
+  margin: 0 0 8px;
+
+  color: #555555;
+
+  font-size: 14px;
+
+  text-transform: uppercase;
+
+  letter-spacing: 1px;
+}
+
+h1 {
+  margin: 0;
+
+  font-size: 42px;
+
+  font-weight: 600;
+
+  line-height: 1.15;
+
+  letter-spacing: -1px;
+}
+
+.subtitle {
+  margin: 10px 0 0;
+
+  color: #666666;
+
+  font-size: 18px;
+}
+
+/* Abschnitte */
+
+.section {
+  padding: 60px 0;
+
+  border-bottom: 1px solid #d9d9d9;
+}
+
+.section-header {
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: flex-start;
+
+  gap: 30px;
+
+  margin-bottom: 40px;
+}
+
+.section-number {
+  margin: 0 0 4px;
+
+  color: #1f5fa8;
+
+  font-size: 14px;
+
+  font-weight: 700;
+}
+
+h2 {
+  margin: 0;
+
+  font-size: 28px;
+
+  font-weight: 600;
+}
+
+h3 {
+  margin-top: 0;
+
+  font-size: 18px;
+}
+
+/* Informationen zur Geometrie */
+
+.geometry-info {
+  display: flex;
+
+  gap: 20px;
+
+  color: #666666;
+
+  font-size: 14px;
+}
+
+.geometry-info span {
+  padding: 7px 12px;
+
+  border: 1px solid #cccccc;
+
+  border-radius: 4px;
+}
+
+.geometry-info strong {
+  color: #1a1a1a;
+}
+
+/* WebGL Canvas */
+
+.canvas-container {
+  display: flex;
+
+  justify-content: center;
+
+  align-items: center;
+
+  padding: 30px;
+
+  background-color: #f7f7f7;
+
+  border: 1px solid #dddddd;
+}
+
+canvas {
+  display: block;
+
+  width: min(760px, 100%);
+
+  height: auto;
+
+  background-color: #f8f8f8;
+}
+
+.status-text {
+  margin: 15px 0 0;
+
+  color: #666666;
+
+  font-size: 14px;
+}
+
+/* Dokumentation */
+
+.documentation-grid {
+  display: grid;
+
+  grid-template-columns: repeat(2, 1fr);
+
+  gap: 40px;
+}
+
+.documentation article {
+  padding-top: 20px;
+
+  border-top: 2px solid #1a1a1a;
+}
+
+.documentation p {
+  color: #555555;
+}
+
+code {
+  padding: 2px 4px;
+
+  border-radius: 3px;
+
+  background-color: #f2f2f2;
+
+  font-family: 'Courier New', Courier, monospace;
+
+  font-size: 0.9em;
+}
+
+/* Quellen */
+
+.source-list {
+  margin: 0;
+
+  padding-left: 20px;
+}
+
+.source-list li {
+  margin-bottom: 10px;
+}
+
+.source-list a {
+  color: #1f5fa8;
+
+  text-decoration: none;
+}
+
+.source-list a:hover {
+  text-decoration: underline;
+}
+
+/* Footer */
+
+.page-footer {
+  padding: 30px 0;
+
+  color: #777777;
+
+  font-size: 14px;
+}
+
+/* Responsive */
+
+@media (max-width: 700px) {
+  h1 {
+    font-size: 34px;
+  }
+
+  .section-header {
+    display: block;
+  }
+
+  .geometry-info {
+    margin-top: 20px;
+
+    flex-wrap: wrap;
+  }
+
+  .documentation-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .canvas-container {
+    padding: 15px;
+  }
+}

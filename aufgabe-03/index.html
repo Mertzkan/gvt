@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <meta
+      name="description"
+      content="Einsendeaufgabe 03: Farbig gefüllte 2D Geometrie mit WebGL."
+    />
+
+    <title>Aufgabe 03 | Farbig gefüllte 2D Geometrie</title>
+
+    <link rel="stylesheet" href="style.css" />
+
+    <script src="app.js" defer></script>
+  </head>
+
+  <body>
+    <header class="page-header">
+      <div class="container">
+        <a class="back-link" href="../">
+          <span aria-hidden="true">←</span>
+          Zur Übersicht
+        </a>
+
+        <p class="module-name">Graphical Visualisation Technologies</p>
+
+        <h1>Farbig gefüllte 2D Geometrie</h1>
+
+        <p class="subtitle">Einsendeaufgabe 03</p>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="section">
+        <div class="section-header">
+          <div>
+            <p class="section-number">01</p>
+
+            <h2>Low Poly Fuchs</h2>
+          </div>
+
+          <div class="geometry-info">
+            <span>
+              <strong id="vertexCount"> – </strong>
+              Vertices
+            </span>
+
+            <span>
+              <strong id="triangleCount"> – </strong>
+              Dreiecke
+            </span>
+          </div>
+        </div>
+
+        <div class="canvas-container">
+          <canvas id="glCanvas" width="760" height="760">
+            Dein Browser unterstützt das HTML-Canvas-Element nicht.
+          </canvas>
+        </div>
+
+        <p id="webglStatus" class="status-text">WebGL wird initialisiert …</p>
+      </section>
+
+      <section class="section documentation">
+        <div class="section-header">
+          <div>
+            <p class="section-number">02</p>
+
+            <h2>Dokumentation</h2>
+          </div>
+        </div>
+
+        <div class="documentation-grid">
+          <article>
+            <h3>Geometrie</h3>
+
+            <p>
+              Die Geometrie basiert gestalterisch auf der Fuchsmaske aus
+              Einsendeaufgabe 02 und wurde für diese Aufgabe als gefülltes
+              Low-Poly-Modell aus Dreiecken neu aufgebaut.
+            </p>
+
+            <p>
+              Die Form wird auf einem Raster mit 20 × 20 Einheiten konstruiert.
+              Symmetrische Bereiche werden algorithmisch an der vertikalen
+              Mittelachse gespiegelt.
+            </p>
+          </article>
+
+          <article>
+            <h3>Dreiecke und Indizes</h3>
+
+            <p>
+              Die Oberfläche besteht ausschließlich aus Dreiecken. Jedes Dreieck
+              besitzt drei Vertices und wird über einen Index-Buffer mit
+              <code>gl.drawElements()</code> gerendert.
+            </p>
+
+            <p>
+              Vor dem Rendern wird geprüft, ob Vertex, Farb- und Indexdaten
+              zueinander passen.
+            </p>
+          </article>
+
+          <article>
+            <h3>Farbinterpolation</h3>
+
+            <p>
+              Jedem Vertex ist eine RGB-Farbe zugeordnet. Die Farbe wird im
+              Vertex-Shader an den Fragment-Shader weitergegeben.
+            </p>
+
+            <p>
+              WebGL interpoliert die Farben zwischen den drei Eckpunkten eines
+              Dreiecks automatisch. Dadurch entstehen innerhalb einzelner
+              Flächen weiche Farbverläufe.
+            </p>
+          </article>
+
+          <article>
+            <h3>Gestaltung</h3>
+
+            <p>
+              Die Fuchsmaske verwendet verschiedene warme Orange-, Braun- und
+              Cremetöne. Unterschiedlich kolorierte Dreiecke erzeugen die
+              typische facettierte Low-Poly-Wirkung.
+            </p>
+
+            <p>
+              Dunkle Augen- und Nasenflächen sowie blaue Akzente setzen
+              zusätzliche Kontraste.
+            </p>
+          </article>
+
+          <article>
+            <h3>WebGL</h3>
+
+            <p>
+              Positionen und Farben werden in getrennten WebGL-Buffern
+              gespeichert. Ein Vertex-Shader verarbeitet Position und
+              Vertex-Farbe.
+            </p>
+
+            <p>
+              Die Darstellung erfolgt mit
+              <code>gl.TRIANGLES</code> und <code>gl.drawElements()</code>.
+            </p>
+          </article>
+
+          <article>
+            <h3>Test und Qualitätssicherung</h3>
+
+            <p>
+              Die Anwendung prüft die Konsistenz der Geometriedaten vor dem
+              Rendern. Zusätzlich wird die Anwendung in Google Chrome getestet
+              und die Browserkonsole auf JavaScript-, Shader- und WebGL-Fehler
+              überprüft.
+            </p>
+          </article>
+
+          <article>
+            <h3>Material und Quellen</h3>
+
+            <p>
+              Die dargestellte Fuchsgeometrie wurde speziell für diese
+              Aufgabenserie konstruiert. Es wurde keine externe Bildvorlage oder
+              fertige Vektorgrafik verwendet.
+            </p>
+
+            <ul class="source-list">
+              <li>
+                <a
+                  href="https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/drawElements"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  MDN Web Docs – WebGLRenderingContext.drawElements()
+                </a>
+              </li>
+
+              <li>
+                <a
+                  href="https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Constants"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  MDN Web Docs – WebGL Constants
+                </a>
+              </li>
+            </ul>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer class="page-footer">
+      <div class="container">
+        <p>Graphical Visualisation Technologies</p>
+      </div>
+    </footer>
+  </body>
+</html>
