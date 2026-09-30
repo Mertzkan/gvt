@@ -1,0 +1,581 @@
+<!doctype html>
+
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <meta
+      name="description"
+      content="Einsendeaufgabe 07: Visualisierung des Z-Buffers einer WebGL-Szene als Graustufenbild."
+    />
+
+    <title>Aufgabe 07 | Z-Buffer Visualisierung</title>
+
+    <link rel="stylesheet" href="style.css" />
+
+    <script src="../ext/gl-matrix.js" defer></script>
+
+    <script src="app.js" defer></script>
+  </head>
+
+  <body>
+    <!-- ==================================================
+       KOPFBEREICH
+       ================================================== -->
+
+    <header class="page-header">
+      <div class="container">
+        <a class="back-link" href="../">
+          <span aria-hidden="true">←</span>
+          Zur Übersicht
+        </a>
+
+        <p class="module-name">Graphical Visualisation Technologies</p>
+
+        <h1>Z-Buffer Visualisierung</h1>
+
+        <p class="subtitle">Einsendeaufgabe 07</p>
+      </div>
+    </header>
+
+    <main class="container">
+      <!-- ==================================================
+         01 – AUFGABENIDEE
+         ================================================== -->
+
+      <section class="section introduction">
+        <div class="section-header">
+          <div>
+            <p class="section-number">01</p>
+
+            <h2>Tiefe und Verdeckungen</h2>
+          </div>
+        </div>
+
+        <p>
+          Die Szene besteht aus mehreren dreidimensionalen Grundkörpern, die in
+          unterschiedlichen Tiefen angeordnet sind und sich aus Sicht der Kamera
+          teilweise überdecken.
+        </p>
+
+        <p>
+          In der Z-Buffer-Darstellung wird die Tiefe jedes sichtbaren Fragments
+          als Grauwert dargestellt. Fragmente, die näher an der Kamera liegen,
+          erscheinen dunkel. Mit zunehmender Entfernung werden die Fragmente
+          heller.
+        </p>
+
+        <p>
+          Zusätzlich kann zwischen der eigentlichen Z-Buffer-Visualisierung und
+          einer farbigen Vergleichsansicht gewechselt werden. Dadurch lassen
+          sich räumliche Lage, Verdeckungen und Tiefenwerte direkt miteinander
+          vergleichen.
+        </p>
+      </section>
+
+      <!-- ==================================================
+         02 – BEDIENUNG
+         ================================================== -->
+
+      <section class="section">
+        <div class="section-header">
+          <div>
+            <p class="section-number">02</p>
+
+            <h2>Bedienung</h2>
+          </div>
+        </div>
+
+        <div class="interaction-grid">
+          <article class="interaction-card">
+            <div class="key-combination">
+              <kbd>W</kbd>
+
+              <span>/</span>
+
+              <kbd>S</kbd>
+            </div>
+
+            <div>
+              <strong> Kamera vertikal bewegen </strong>
+
+              <p>
+                Bewegt die Kamera kontinuierlich in positiver beziehungsweise
+                negativer Y-Richtung. Die Kamera bleibt dabei auf die Szene
+                ausgerichtet, sodass sich der Blickwinkel von oben
+                beziehungsweise unten verändert.
+              </p>
+            </div>
+          </article>
+
+          <article class="interaction-card">
+            <div class="key-combination">
+              <kbd>A</kbd>
+
+              <span>/</span>
+
+              <kbd>D</kbd>
+            </div>
+
+            <div>
+              <strong> Kamera horizontal bewegen </strong>
+
+              <p>
+                Bewegt die Kamera kontinuierlich in negativer beziehungsweise
+                positiver X-Richtung. Dadurch kann die Szene aus seitlich
+                versetzten Blickwinkeln betrachtet werden.
+              </p>
+            </div>
+          </article>
+
+          <article class="interaction-card">
+            <div class="key-combination">
+              <kbd>←</kbd>
+
+              <span>/</span>
+
+              <kbd>→</kbd>
+            </div>
+
+            <div>
+              <strong> Szene horizontal drehen </strong>
+
+              <p>
+                Dreht die gesamte Szene kontinuierlich um ihre Y-Achse. Die
+                Taste kann für eine flüssige Rotation gedrückt gehalten werden.
+              </p>
+            </div>
+          </article>
+
+          <article class="interaction-card">
+            <div class="key-combination">
+              <kbd>↑</kbd>
+
+              <span>/</span>
+
+              <kbd>↓</kbd>
+            </div>
+
+            <div>
+              <strong> Szene vertikal drehen </strong>
+
+              <p>
+                Dreht die gesamte Szene kontinuierlich um ihre X-Achse. Dadurch
+                verändern sich Verdeckungen und Tiefenverhältnisse aus
+                unterschiedlichen Blickrichtungen.
+              </p>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <!-- ==================================================
+         03 – WEBGL-SZENE
+         ================================================== -->
+
+      <section class="section">
+        <div class="section-header">
+          <div>
+            <p class="section-number">03</p>
+
+            <h2>Szene</h2>
+
+            <p class="section-description">
+              Würfel, Kugel, Torus und Zylinder in unterschiedlichen Tiefen
+            </p>
+          </div>
+        </div>
+
+        <div class="scene-layout">
+          <!-- WebGL-Canvas -->
+
+          <div class="canvas-container">
+            <canvas id="sceneCanvas" width="1000" height="650">
+              Dein Browser unterstützt Canvas nicht.
+            </canvas>
+          </div>
+
+          <!-- Steuerung -->
+
+          <aside class="control-panel">
+            <!-- Darstellungsmodus -->
+
+            <section class="control-group">
+              <h3>Darstellung</h3>
+
+              <div class="mode-buttons">
+                <button
+                  class="control-button mode-button active"
+                  type="button"
+                  data-mode="depth"
+                  aria-pressed="true"
+                >
+                  Z-Buffer
+                </button>
+
+                <button
+                  class="control-button mode-button"
+                  type="button"
+                  data-mode="color"
+                  aria-pressed="false"
+                >
+                  Farbansicht
+                </button>
+              </div>
+
+              <p class="control-hint">
+                In der Z-Buffer-Ansicht bedeuten dunkle Werte eine geringe
+                Entfernung zur Kamera und helle Werte eine größere Entfernung.
+              </p>
+            </section>
+
+            <!-- Kamera -->
+
+            <section class="control-group">
+              <h3>Kamera</h3>
+
+              <div class="status-list">
+                <div class="status-row">
+                  <span> X </span>
+
+                  <strong id="cameraX"> 0.00 </strong>
+                </div>
+
+                <div class="status-row">
+                  <span> Y </span>
+
+                  <strong id="cameraY"> 0.00 </strong>
+                </div>
+
+                <div class="status-row">
+                  <span> Bewegung </span>
+
+                  <strong> XY-Ebene </strong>
+                </div>
+              </div>
+            </section>
+
+            <!-- Szenenrotation -->
+
+            <section class="control-group">
+              <h3>Szenenrotation</h3>
+
+              <div class="status-list">
+                <div class="status-row">
+                  <span> X-Achse </span>
+
+                  <strong id="sceneRotationX"> 20° </strong>
+                </div>
+
+                <div class="status-row">
+                  <span> Y-Achse </span>
+
+                  <strong id="sceneRotationY"> 35° </strong>
+                </div>
+              </div>
+            </section>
+
+            <!-- Clipping -->
+
+            <section class="control-group">
+              <h3>Tiefenbereich</h3>
+
+              <div class="status-list">
+                <div class="status-row">
+                  <span> Near </span>
+
+                  <strong id="nearValue"> 2.0 </strong>
+                </div>
+
+                <div class="status-row">
+                  <span> Far </span>
+
+                  <strong id="farValue"> 18.0 </strong>
+                </div>
+              </div>
+            </section>
+          </aside>
+        </div>
+      </section>
+
+      <!-- ==================================================
+         04 – Z-BUFFER
+         ================================================== -->
+
+      <section class="section">
+        <div class="section-header">
+          <div>
+            <p class="section-number">04</p>
+
+            <h2>Z-Buffer</h2>
+          </div>
+        </div>
+
+        <div class="documentation-grid">
+          <article>
+            <h3>Tiefentest</h3>
+
+            <p>
+              Beim Rendern speichert der Tiefen-Buffer für jedes Fragment einen
+              Tiefenwert. Wird ein weiteres Fragment an derselben Bildposition
+              erzeugt, entscheidet der Tiefentest, welches Fragment näher an der
+              Kamera liegt.
+            </p>
+
+            <p>
+              Dadurch werden weiter hinten liegende Fragmente von näheren
+              Fragmenten verdeckt.
+            </p>
+          </article>
+
+          <article>
+            <h3>Fragmenttiefe</h3>
+
+            <p>
+              Im Fragment-Shader steht über
+              <code>gl_FragCoord.z</code> der Tiefenwert des aktuellen Fragments
+              zur Verfügung.
+            </p>
+
+            <p>
+              Dieser Wert liegt nach der Projektion im Bereich von 0 bis 1. Bei
+              perspektivischer Projektion ist diese Verteilung jedoch nicht
+              linear.
+            </p>
+          </article>
+
+          <article>
+            <h3>Linearisierung</h3>
+
+            <p>
+              Für eine besser erkennbare Graustufendarstellung wird der
+              Tiefenwert zunächst aus dem Bereich
+              <code>[0, 1]</code> zurück in den Bereich der perspektivischen
+              Projektion überführt.
+            </p>
+
+            <div class="formula-block">
+              <p>z<sub>ndc</sub> = 2 · z − 1</p>
+            </div>
+
+            <p>
+              Anschließend wird unter Verwendung der Near- und
+              Far-Clipping-Plane eine linearisierte Tiefe im Kameraraum
+              berechnet.
+            </p>
+          </article>
+
+          <article>
+            <h3>Graustufen</h3>
+
+            <p>
+              Die linearisierte Tiefe wird zwischen Near- und Far-Clipping-Plane
+              auf den Bereich von 0 bis 1 normiert.
+            </p>
+
+            <div class="formula-block">
+              <p>0 → dunkel → nahe</p>
+
+              <p>1 → hell → weit entfernt</p>
+            </div>
+
+            <p>
+              Der normierte Wert wird anschließend für alle drei Farbkanäle des
+              Fragments verwendet.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <!-- ==================================================
+         05 – SZENENGESTALTUNG
+         ================================================== -->
+
+      <section class="section">
+        <div class="section-header">
+          <div>
+            <p class="section-number">05</p>
+
+            <h2>Szenengestaltung</h2>
+          </div>
+        </div>
+
+        <div class="documentation-grid">
+          <article>
+            <h3>Mehrere Tiefenebenen</h3>
+
+            <p>
+              Die Grundkörper werden nicht auf derselben Z-Position angeordnet.
+              Stattdessen liegen sie gestaffelt vor und hintereinander.
+            </p>
+
+            <p>
+              Dadurch entstehen deutliche Unterschiede in den Tiefenwerten und
+              damit unterschiedliche Graustufen.
+            </p>
+          </article>
+
+          <article>
+            <h3>Verdeckungen</h3>
+
+            <p>
+              Die Körper sind so positioniert, dass sich ihre Projektionen aus
+              der Ausgangsperspektive teilweise überschneiden.
+            </p>
+
+            <p>
+              Dadurch lässt sich erkennen, welcher Körper sich vor
+              beziehungsweise hinter einem anderen Objekt befindet.
+            </p>
+          </article>
+
+          <article>
+            <h3>Vergleichsansicht</h3>
+
+            <p>
+              Zusätzlich zur Z-Buffer-Visualisierung steht eine farbige
+              Darstellung derselben Szene zur Verfügung.
+            </p>
+
+            <p>
+              Die Objektpositionen und die Kamera bleiben beim Umschalten
+              unverändert. Dadurch können Farbdarstellung und Tiefenbild
+              unmittelbar miteinander verglichen werden.
+            </p>
+          </article>
+
+          <article>
+            <h3>Interaktive Perspektive</h3>
+
+            <p>
+              Mit <code>WASD</code> wird die Kamera kontinuierlich in der
+              XY-Ebene bewegt. Ihr Z-Wert bleibt dabei unverändert.
+            </p>
+
+            <p>
+              Die Kamera bleibt auf einen festen Punkt innerhalb der Szene
+              ausgerichtet. Eine Bewegung nach oben oder unten verändert deshalb
+              gleichzeitig den Blickwinkel auf die Grundkörper und ermöglicht
+              unter anderem deutlichere Ansichten von oben.
+            </p>
+
+            <p>
+              Die Pfeiltasten verändern dagegen die gemeinsame Rotation der
+              gesamten Szene um die X- beziehungsweise Y-Achse. Dadurch
+              entstehen wechselnde Überschneidungen und Verdeckungen, ohne die
+              relativen Positionen der Körper zueinander zu verändern.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <!-- ==================================================
+         06 – DOKUMENTATION
+         ================================================== -->
+
+      <section class="section documentation">
+        <div class="section-header">
+          <div>
+            <p class="section-number">06</p>
+
+            <h2>Dokumentation</h2>
+          </div>
+        </div>
+
+        <div class="documentation-grid">
+          <article>
+            <h3>Rendering</h3>
+
+            <p>
+              Alle Körper werden mit WebGL gerendert. Für die perspektivische
+              Projektion wird eine Projection-Matrix verwendet, während die
+              Kamera durch eine View-Matrix beschrieben wird.
+            </p>
+
+            <p>
+              Die gemeinsame Drehung der Szene erfolgt über eine zusätzliche
+              Transformation der Model-Matrizen.
+            </p>
+          </article>
+
+          <article>
+            <h3>Interaktion</h3>
+
+            <p>
+              <code>W</code> und <code>S</code> verändern kontinuierlich die
+              Y-Position der Kamera, während <code>A</code> und
+              <code>D</code> die X-Position verändern.
+            </p>
+
+            <p>
+              Die Kamera bleibt dabei auf die Szene ausgerichtet. Die Bewegung
+              findet ausschließlich in der XY-Ebene statt; ihre Z-Position
+              bleibt konstant.
+            </p>
+
+            <p>
+              Die Pfeiltasten links und rechts drehen die gesamte Szene um die
+              Y-Achse. Die Pfeiltasten oben und unten verändern die Rotation um
+              die X-Achse. Durch Gedrückthalten der Tasten erfolgt die Bewegung
+              kontinuierlich und zeitabhängig.
+            </p>
+          </article>
+
+          <article>
+            <h3>Test und Qualitätssicherung</h3>
+
+            <p>
+              Getestet wurden die kontinuierliche Kamerabewegung mit
+              <code>WASD</code>, die Rotation der Szene mit den Pfeiltasten
+              sowie der Wechsel zwischen Z-Buffer- und Farbansicht.
+            </p>
+
+            <p>
+              Die Szene wurde aus unterschiedlichen Kamera- und Rotationswinkeln
+              betrachtet. Dabei wurde geprüft, dass sich die Grundkörper
+              teilweise überdecken und wechselnde Verdeckungen entstehen.
+            </p>
+
+            <p>
+              In der Z-Buffer-Ansicht wurde kontrolliert, dass Fragmente mit
+              geringerer Entfernung zur Kamera dunkler und weiter entfernte
+              Fragmente heller dargestellt werden.
+            </p>
+
+            <p>
+              Abschließend wurde die Browserkonsole in Google Chrome auf
+              JavaScript-, Shader- und WebGL-Fehler überprüft.
+            </p>
+          </article>
+
+          <article>
+            <h3>Quellen und verwandtes Material</h3>
+
+            <ul class="source-list">
+              <li>Lerneinheit SHA: Shader in der WebGL-Rendering-Pipeline.</li>
+
+              <li>Kapitel KUF: Z-Buffer und Verdeckungsberechnung.</li>
+
+              <li>
+                glMatrix 2.2.0 aus dem bereitgestellten Lehrmaterial: Matrix-
+                und Vektoroperationen.
+              </li>
+            </ul>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <!-- ==================================================
+       FOOTER
+       ================================================== -->
+
+    <footer class="page-footer">
+      <div class="container">
+        <p>Graphical Visualisation Technologies</p>
+      </div>
+    </footer>
+  </body>
+</html>
