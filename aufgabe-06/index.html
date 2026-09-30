@@ -1,0 +1,633 @@
+<!doctype html>
+
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <meta
+      name="description"
+      content="Einsendeaufgabe 06: Animation von vier Kugeln und einem räumlich rotierenden Torus mit WebGL."
+    />
+
+    <title>Aufgabe 06 | Objekte bewegen – fliegende Kugeln</title>
+
+    <link rel="stylesheet" href="style.css" />
+
+    <script src="../ext/gl-matrix.js" defer></script>
+
+    <script src="app.js" defer></script>
+  </head>
+
+  <body>
+    <!-- ==================================================
+       KOPFBEREICH
+       ================================================== -->
+
+    <header class="page-header">
+      <div class="container">
+        <a class="back-link" href="../">
+          <span aria-hidden="true">←</span>
+          Zur Übersicht
+        </a>
+
+        <p class="module-name">Graphical Visualisation Technologies</p>
+
+        <h1>Objekte bewegen – fliegende Kugeln</h1>
+
+        <p class="subtitle">Einsendeaufgabe 06</p>
+      </div>
+    </header>
+
+    <main class="container">
+      <!-- ==================================================
+         01 – AUFGABENIDEE
+         ================================================== -->
+
+      <section class="section introduction">
+        <div class="section-header">
+          <div>
+            <p class="section-number">01</p>
+
+            <h2>Animierte 3D-Szene</h2>
+          </div>
+        </div>
+
+        <p>
+          In der Szene bewegen sich vier farbige Kugeln gemeinsam um einen
+          Torus. Die Kugeln starten außerhalb des Torus und bewegen sich auf
+          einer synchronisierten Umlaufbahn um das Objekt.
+        </p>
+
+        <p>
+          Nacheinander erhält jede Kugel einen eigenen Solo-Durchflug. Dabei
+          verlässt sie vorübergehend die äußere Umlaufbahn, wird zum Mittelpunkt
+          des Torus geführt, fliegt durch dessen freie Öffnung und kehrt
+          anschließend wieder auf die äußere Bahn zurück.
+        </p>
+
+        <p>
+          Gleichzeitig rotiert der Torus räumlich um mehrere Achsen. Die
+          Rotation des Torus und die Bewegung der Kugeln werden aus derselben
+          Animationszeit berechnet und dadurch synchron ausgeführt.
+        </p>
+
+        <p>
+          Unterhalb der Szene befindet sich eine Ebene aus Gitterlinien. Sie
+          dient als räumliche Orientierung und erleichtert die Beurteilung der
+          Objektbewegungen relativ zur feststehenden Kamera.
+        </p>
+      </section>
+
+      <!-- ==================================================
+         02 – BEDIENUNG
+         ================================================== -->
+
+      <section class="section">
+        <div class="section-header">
+          <div>
+            <p class="section-number">02</p>
+
+            <h2>Bedienung</h2>
+          </div>
+        </div>
+
+        <div class="interaction-grid">
+          <article class="interaction-card">
+            <kbd>K</kbd>
+
+            <div>
+              <strong> Pausieren und Einzelschritt </strong>
+
+              <p>
+                Läuft die automatische Animation, wird sie beim ersten Drücken
+                von K pausiert und gleichzeitig um einen Schritt weiterbewegt.
+                Jeder weitere Tastendruck führt einen weiteren Einzelschritt
+                aus.
+              </p>
+            </div>
+          </article>
+
+          <article class="interaction-card">
+            <span class="interaction-symbol"> ▶ </span>
+
+            <div>
+              <strong> Automatische Animation </strong>
+
+              <p>
+                Die Animation startet automatisch beim Laden der Webseite. Über
+                die Schaltfläche kann sie pausiert und wieder fortgesetzt
+                werden.
+              </p>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <!-- ==================================================
+         03 – WEBGL-SZENE
+         ================================================== -->
+
+      <section class="section">
+        <div class="section-header">
+          <div>
+            <p class="section-number">03</p>
+
+            <h2>Szene</h2>
+
+            <p class="section-description">
+              Vier Kugeln, räumlich rotierender Torus und Gitterebene
+            </p>
+          </div>
+        </div>
+
+        <div class="scene-layout">
+          <!-- WebGL-Canvas -->
+
+          <div class="canvas-container">
+            <canvas id="sceneCanvas" width="1000" height="650">
+              Dein Browser unterstützt Canvas nicht.
+            </canvas>
+          </div>
+
+          <!-- Steuerung -->
+
+          <aside class="control-panel">
+            <section class="control-group">
+              <h3>Animation</h3>
+
+              <button
+                id="toggleAnimation"
+                class="control-button primary-button active"
+                type="button"
+                aria-pressed="true"
+              >
+                Animation pausieren
+              </button>
+
+              <button
+                id="stepAnimation"
+                class="control-button"
+                type="button"
+                disabled
+              >
+                Einzelschritt
+              </button>
+
+              <p class="control-hint">
+                Die Animation startet automatisch. Mit
+                <strong>K</strong> wird sie pausiert und anschließend
+                schrittweise weiterbewegt.
+              </p>
+            </section>
+
+            <section class="control-group">
+              <h3>Status</h3>
+
+              <div class="status-list">
+                <div class="status-row">
+                  <span> Zustand </span>
+
+                  <strong id="animationStatus"> Läuft </strong>
+                </div>
+
+                <div class="status-row">
+                  <span> Kugelwinkel </span>
+
+                  <strong id="ballAngleDisplay"> 0° </strong>
+                </div>
+
+                <div class="status-row">
+                  <span> Toruswinkel </span>
+
+                  <strong id="torusAngleDisplay"> 0° </strong>
+                </div>
+              </div>
+            </section>
+
+            <section class="control-group">
+              <h3>Szene</h3>
+
+              <div class="status-list">
+                <div class="status-row">
+                  <span> Kugeln </span>
+
+                  <strong> 4 </strong>
+                </div>
+
+                <div class="status-row">
+                  <span> Außenbahn </span>
+
+                  <strong> Kreis </strong>
+                </div>
+
+                <div class="status-row">
+                  <span> Solo-Durchflug </span>
+
+                  <strong> nacheinander </strong>
+                </div>
+
+                <div class="status-row">
+                  <span> Torus </span>
+
+                  <strong> synchron animiert </strong>
+                </div>
+              </div>
+            </section>
+          </aside>
+        </div>
+      </section>
+
+      <!-- ==================================================
+         04 – BEWEGUNG DER KUGELN
+         ================================================== -->
+
+      <section class="section">
+        <div class="section-header">
+          <div>
+            <p class="section-number">04</p>
+
+            <h2>Bewegung der Kugeln</h2>
+          </div>
+        </div>
+
+        <div class="documentation-grid">
+          <article>
+            <h3>Äußere Kreisbahn</h3>
+
+            <p>
+              Außerhalb des Torus bewegen sich die vier Kugeln auf einer
+              gemeinsamen Kreisbahn. Die Position einer Kugel wird dabei über
+              Sinus und Kosinus aus einem Winkel berechnet.
+            </p>
+
+            <div class="formula-block">
+              <p>x<sub>i</sub> = r<sub>B</sub> · cos(φ<sub>i</sub>)</p>
+
+              <p>z<sub>i</sub> = r<sub>B</sub> · sin(φ<sub>i</sub>)</p>
+            </div>
+
+            <p>
+              <code>rB</code> bezeichnet den Radius der äußeren Umlaufbahn und
+              <code>φi</code> den aktuellen Winkel der jeweiligen Kugel.
+            </p>
+          </article>
+
+          <article>
+            <h3>Phasenverschiebung</h3>
+
+            <p>
+              Die Kugeln erhalten auf der äußeren Kreisbahn einen festen
+              Phasenunterschied von 90 Grad.
+            </p>
+
+            <div class="formula-block">
+              <p>φ<sub>i</sub> = φ + i · π / 2</p>
+            </div>
+
+            <p>
+              Dadurch sind die vier Kugeln während der gemeinsamen
+              Umlaufbewegung gleichmäßig um den Torus verteilt.
+            </p>
+          </article>
+
+          <article>
+            <h3>Kreisförmiger Solo-Durchflug</h3>
+
+            <p>
+              Jede Kugel erhält nacheinander ein eigenes Animationszeitfenster.
+              Während dieses Solo-Abschnitts verlässt nur die aktive Kugel die
+              äußere Kreisbahn.
+            </p>
+
+            <p>
+              Auch der Solo-Durchflug selbst ist als Kreisbahn definiert. Der
+              Kreis beginnt an der äußeren Umlaufbahn, führt zunächst über den
+              Torus, anschließend durch das Zentrum seiner freien Öffnung und
+              danach unterhalb des Torus zurück zum Ausgangspunkt.
+            </p>
+
+            <div class="formula-block">
+              <p>ρ = r<sub>S</sub> · (1 + cos(θ))</p>
+
+              <p>y = r<sub>S</sub> · sin(θ)</p>
+
+              <p>r<sub>S</sub> = r<sub>B</sub> / 2</p>
+            </div>
+
+            <p>
+              Bei einem Solo-Winkel von 180 Grad wird
+              <code>ρ = 0</code>. Die Kugel befindet sich damit genau im
+              Mittelpunkt des Torus und fliegt durch dessen freie Öffnung. Nach
+              360 Grad erreicht sie wieder exakt ihren Ausgangspunkt auf der
+              äußeren Kreisbahn.
+            </p>
+          </article>
+
+          <article>
+            <h3>Kollisionsfreie Bewegung</h3>
+
+            <p>
+              Die äußere Kreisbahn besitzt einen ausreichend großen Abstand zum
+              Torus. Während eines Solo-Durchflugs bewegt sich nur die aktive
+              Kugel auf ihrer eigenen kreisförmigen Bahn durch den freien
+              Innenbereich des Torus.
+            </p>
+
+            <p>
+              Der Radius dieser Solo-Kreisbahn ist so gewählt, dass die Kugel
+              die Torusröhre nicht berührt. Die übrigen drei Kugeln verbleiben
+              währenddessen auf der äußeren Kreisbahn und sind dort um jeweils
+              90 Grad gegeneinander versetzt.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <!-- ==================================================
+         05 – OBJEKTTRANSFORMATION
+         ================================================== -->
+
+      <section class="section">
+        <div class="section-header">
+          <div>
+            <p class="section-number">05</p>
+
+            <h2>Objektbewegung</h2>
+          </div>
+        </div>
+
+        <div class="documentation-grid">
+          <article>
+            <h3>Model-Transformation</h3>
+
+            <p>
+              Im Unterschied zur Kamerabewegung aus der vorherigen Aufgabe
+              bleibt die Kamera hier während der Animation an einer festen
+              Position.
+            </p>
+
+            <p>
+              Stattdessen werden die Transformationsdaten der einzelnen Modelle
+              verändert. Für jede Kugel wird die Position in
+              <code>model.translate</code> aktualisiert.
+            </p>
+
+            <p>
+              Beim Rendern wird aus diesen Werten anschließend für jedes Modell
+              erneut die Model-Matrix berechnet.
+            </p>
+          </article>
+
+          <article>
+            <h3>Kamera und Objekt</h3>
+
+            <p>
+              Die View-Matrix der Kamera bleibt während der Animation konstant.
+              Dadurch ist eindeutig erkennbar, dass sich die Objekte innerhalb
+              der Szene bewegen.
+            </p>
+
+            <p>
+              Die Animation entsteht somit durch Veränderungen der
+              Model-Transformationen und nicht durch eine Bewegung der Kamera.
+            </p>
+          </article>
+
+          <article>
+            <h3>Eigenrotation der Kugeln</h3>
+
+            <p>
+              Zusätzlich zur Positionsänderung besitzen die Kugeln eigene
+              Rotationen um mehrere Achsen.
+            </p>
+
+            <p>
+              Da auf den Kugeloberflächen Linien dargestellt werden, ist diese
+              Eigenrotation auch visuell erkennbar.
+            </p>
+          </article>
+
+          <article>
+            <h3>Fläche und Linien</h3>
+
+            <p>
+              Kugeln und Torus werden zunächst als gefüllte Dreiecksflächen
+              gezeichnet. Anschließend wird ein dunkles Drahtgitter über die
+              jeweilige Oberfläche gelegt.
+            </p>
+
+            <p>
+              Dadurch bleiben die zugrunde liegenden geometrischen Strukturen
+              auch während der Animation sichtbar.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <!-- ==================================================
+         06 – ROTIERENDER TORUS
+         ================================================== -->
+
+      <section class="section">
+        <div class="section-header">
+          <div>
+            <p class="section-number">06</p>
+
+            <h2>Erweiterung: animierter Torus</h2>
+          </div>
+        </div>
+
+        <div class="documentation-grid">
+          <article>
+            <h3>Räumliche Rotation</h3>
+
+            <p>
+              Der Torus wird nicht lediglich um seine natürliche Symmetrieachse
+              wie ein rollender Reifen gedreht.
+            </p>
+
+            <p>
+              Stattdessen werden Rotationen um die X-, Y- und Z-Achse
+              kombiniert. Zusätzlich werden langsame Sinus- und
+              Kosinusänderungen verwendet, wodurch eine räumlich deutlich
+              erkennbare Bewegung entsteht.
+            </p>
+          </article>
+
+          <article>
+            <h3>Synchronisierte Bahnen</h3>
+
+            <p>
+              Die aktuelle Rotation des Torus wird auch zur Transformation der
+              Kugelbahnen verwendet.
+            </p>
+
+            <p>
+              Dadurch bleibt die Flugbewegung relativ zum rotierenden Torus
+              ausgerichtet. Dreht und kippt sich der Torus im Raum, wird die
+              zugehörige Bewegungsbahn der Kugeln entsprechend mittransformiert.
+            </p>
+          </article>
+
+          <article>
+            <h3>Gemeinsame Zeitbasis</h3>
+
+            <p>
+              Kugelbewegung und Torusrotation verwenden dieselbe Variable
+              <code>animationTime</code>.
+            </p>
+
+            <p>
+              Alle Bewegungen werden innerhalb desselben
+              <code>requestAnimationFrame()</code>-Ablaufs aktualisiert. Dadurch
+              bleiben die Animationen zeitlich synchron.
+            </p>
+          </article>
+
+          <article>
+            <h3>Zeitabhängige Animation</h3>
+
+            <p>
+              Die vergangene Zeit zwischen zwei Frames wird über
+              <code>deltaTime</code> berücksichtigt.
+            </p>
+
+            <p>
+              Dadurch hängt die Geschwindigkeit der Animation nicht direkt von
+              der Anzahl der pro Sekunde dargestellten Frames ab.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <!-- ==================================================
+         07 – DOKUMENTATION
+         ================================================== -->
+
+      <section class="section documentation">
+        <div class="section-header">
+          <div>
+            <p class="section-number">07</p>
+
+            <h2>Dokumentation</h2>
+          </div>
+        </div>
+
+        <div class="documentation-grid">
+          <article>
+            <h3>Ausgangspunkt</h3>
+
+            <p>
+              Die Modellstruktur orientiert sich am Beispielprogramm der
+              Lerneinheit TFM. Jedes Modell besitzt eigene Werte für Position,
+              Rotation und Skalierung sowie eine eigene Model-Matrix.
+            </p>
+
+            <p>
+              Die vier Kugeln verwenden die im Beispiel vorgegebenen Grundfarben
+              Cyan, Magenta, Blau und Gelb.
+            </p>
+          </article>
+
+          <article>
+            <h3>Gitterebene</h3>
+
+            <p>
+              Unterhalb der animierten Objekte befindet sich eine Ebene aus
+              horizontalen und vertikalen Gitterlinien.
+            </p>
+
+            <p>
+              Sie liefert feste räumliche Referenzpunkte und macht die
+              Objektbewegung relativ zur feststehenden Kamera besser erkennbar.
+            </p>
+          </article>
+
+          <article>
+            <h3>Interaktion</h3>
+
+            <p>
+              Die automatische Animation beginnt unmittelbar nach dem Laden der
+              Webseite.
+            </p>
+
+            <p>
+              Über die Schaltfläche
+              <strong>Animation pausieren</strong>
+              kann die Bewegung angehalten und anschließend wieder gestartet
+              werden.
+            </p>
+
+            <p>
+              Wird während der laufenden Animation die Taste
+              <code>K</code> gedrückt, wird die automatische Animation pausiert
+              und gleichzeitig ein einzelner Animationsschritt ausgeführt.
+            </p>
+
+            <p>
+              Im pausierten Zustand führen sowohl die Taste
+              <code>K</code> als auch die Schaltfläche
+              <strong>Einzelschritt</strong>
+              jeweils einen weiteren Schritt aus.
+            </p>
+          </article>
+
+          <article>
+            <h3>Test und Qualitätssicherung</h3>
+
+            <p>
+              Für die finale Abgabe wurde der automatische Start, Start und
+              Pause über die Schaltfläche sowie die Einzelschrittsteuerung mit
+              der Taste
+              <code>K</code> getestet.
+            </p>
+
+            <p>
+              Abschließend wurde die Browserkonsole in Google Chrome auf
+              JavaScript-, Shader- und WebGL-Fehler kontrolliert.
+            </p>
+          </article>
+
+          <article>
+            <h3>Quellen und verwandtes Material</h3>
+
+            <ul class="source-list">
+              <li>
+                Lerneinheit TFM: Ausgangsszene, Modellstruktur, Transformationen
+                und Animation von Objekten.
+              </li>
+
+              <li>
+                glMatrix 2.2.0 aus dem bereitgestellten Lehrmaterial: Matrix-
+                und Vektoroperationen für Model-, View- und
+                Projection-Transformationen.
+              </li>
+
+              <li>
+                <a
+                  href="https://webglfundamentals.org/webgl/lessons/webgl-2d-rotation.html"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  WebGL Fundamentals – WebGL 2D Rotation
+                </a>
+              </li>
+            </ul>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <!-- ==================================================
+       FOOTER
+       ================================================== -->
+
+    <footer class="page-footer">
+      <div class="container">
+        <p>Graphical Visualisation Technologies</p>
+      </div>
+    </footer>
+  </body>
+</html>
