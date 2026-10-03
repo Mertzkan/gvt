@@ -1,0 +1,818 @@
+<!doctype html>
+
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <meta
+      name="description"
+      content="Einsendeaufgabe 09: Texturierung eines Torus mit Bildtextur und prozedural erzeugter Textur in WebGL."
+    />
+
+    <title>Aufgabe 09 | Torustextur</title>
+
+    <link rel="stylesheet" href="style.css" />
+
+    <script src="../ext/gl-matrix.js" defer></script>
+
+    <script src="app.js" defer></script>
+  </head>
+
+  <body>
+    <!-- ==================================================
+       KOPFBEREICH
+       ================================================== -->
+
+    <header class="page-header">
+      <div class="container">
+        <a class="back-link" href="../">
+          <span aria-hidden="true">←</span>
+          Zur Übersicht
+        </a>
+
+        <p class="module-name">Graphical Visualisation Technologies</p>
+
+        <h1>Torustextur</h1>
+
+        <p class="subtitle">Einsendeaufgabe 09</p>
+      </div>
+    </header>
+
+    <main class="container">
+      <!-- ==================================================
+         01 – AUFGABENIDEE
+         ================================================== -->
+
+      <section class="section introduction">
+        <div class="section-header">
+          <div>
+            <p class="section-number">01</p>
+
+            <h2>Texturen auf einer Modelloberfläche</h2>
+          </div>
+        </div>
+
+        <p>
+          In dieser Szene wird ein parametrisch erzeugter Torus mit
+          zweidimensionalen Texturkoordinaten versehen. Die beiden
+          Parameterrichtungen des Modells werden dabei auf den Bereich von 0 bis
+          1 abgebildet und ermöglichen eine vollständige Texturierung der
+          gekrümmten Oberfläche.
+        </p>
+
+        <p>
+          Als Bildtextur wird eine speziell für diese Aufgabe erzeugte
+          quadratische Textur mit einer Auflösung von 1024 × 1024 Pixeln
+          verwendet. Sie wird in JavaScript geladen, als WebGL-Textur angelegt
+          und über Texture Unit 0 an den Fragment-Shader übergeben.
+        </p>
+
+        <p>
+          Als Erweiterung wurde zusätzlich eine prozedurale Textur
+          implementiert. Das Muster entsteht vollständig im Fragment-Shader aus
+          periodischen Sinus- und Kosinusfunktionen und wird langsam über einen
+          Zeitparameter animiert.
+        </p>
+
+        <p>
+          Zur Untersuchung der Oberfläche können die Kamera bewegt, eine
+          automatische Kamerafahrt gestartet und die Lichtquelle schrittweise
+          auf einer Kreisbahn um den Torus versetzt werden. Zwischen Bildtextur
+          und prozeduraler Textur kann jederzeit umgeschaltet werden.
+        </p>
+      </section>
+
+      <!-- ==================================================
+         02 – BEDIENUNG
+         ================================================== -->
+
+      <section class="section">
+        <div class="section-header">
+          <div>
+            <p class="section-number">02</p>
+
+            <h2>Bedienung</h2>
+          </div>
+        </div>
+
+        <div class="interaction-grid">
+          <article class="interaction-card">
+            <div class="key-combination">
+              <kbd>←</kbd>
+
+              <span>/</span>
+
+              <kbd>→</kbd>
+            </div>
+
+            <div>
+              <strong> Kamera um den Torus bewegen </strong>
+
+              <p>
+                Verändert den horizontalen Kamerawinkel und erlaubt die
+                Betrachtung der Textur aus verschiedenen Richtungen.
+              </p>
+            </div>
+          </article>
+
+          <article class="interaction-card">
+            <div class="key-combination">
+              <kbd>↑</kbd>
+
+              <span>/</span>
+
+              <kbd>↓</kbd>
+            </div>
+
+            <div>
+              <strong> Kamerahöhe verändern </strong>
+
+              <p>
+                Verändert den vertikalen Blickwinkel der Kamera und ermöglicht
+                dadurch auch deutlich erhöhte Ansichten des Torus.
+              </p>
+            </div>
+          </article>
+
+          <article class="interaction-card">
+            <kbd> K </kbd>
+
+            <div>
+              <strong> Kamerafahrt starten oder pausieren </strong>
+
+              <p>
+                Startet beziehungsweise pausiert eine automatische Kamerafahrt
+                auf einer Kreisbahn um den Torus.
+              </p>
+            </div>
+          </article>
+
+          <article class="interaction-card">
+            <kbd> O </kbd>
+
+            <div>
+              <strong> Draufsicht umschalten </strong>
+
+              <p>
+                Wechselt zwischen der normalen Kameraperspektive und einer hohen
+                Ansicht von oben.
+              </p>
+            </div>
+          </article>
+          <article class="interaction-card">
+            <kbd>L</kbd>
+
+            <div>
+              <strong> Lichtquelle weiterschalten </strong>
+
+              <p>
+                Bewegt die Lichtquelle um jeweils 15 Grad auf einer Kreisbahn um
+                den Torus und verändert dadurch die Beleuchtung der texturierten
+                Oberfläche.
+              </p>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <!-- ==================================================
+         03 – WEBGL-SZENE
+         ================================================== -->
+
+      <section class="section">
+        <div class="section-header">
+          <div>
+            <p class="section-number">03</p>
+
+            <h2>Texturierter Torus</h2>
+
+            <p class="section-description">
+              Bildtextur, animierte prozedurale Textur, interaktive Kamera und
+              bewegliche Lichtquelle
+            </p>
+          </div>
+        </div>
+
+        <div class="scene-layout">
+          <!-- WebGL-Canvas -->
+
+          <div class="canvas-container">
+            <canvas id="sceneCanvas" width="1000" height="650">
+              Dein Browser unterstützt Canvas nicht.
+            </canvas>
+          </div>
+
+          <!-- Steuerung -->
+
+          <aside class="control-panel">
+            <!-- ================================================
+       TEXTUR
+       ================================================ -->
+
+            <section class="control-group control-group-primary">
+              <h3>Textur</h3>
+
+              <div class="mode-buttons">
+                <button
+                  class="control-button mode-button active"
+                  type="button"
+                  data-texture-mode="image"
+                  aria-pressed="true"
+                >
+                  Bildtextur
+                </button>
+
+                <button
+                  class="control-button mode-button"
+                  type="button"
+                  data-texture-mode="procedural"
+                  aria-pressed="false"
+                >
+                  Prozedural
+                </button>
+              </div>
+
+              <div class="status-list compact-status">
+                <div class="status-row">
+                  <span> Modus </span>
+
+                  <strong id="textureModeStatus"> Bildtextur </strong>
+                </div>
+
+                <div class="status-row">
+                  <span> Bild </span>
+
+                  <strong id="textureLoadStatus"> Lädt … </strong>
+                </div>
+              </div>
+            </section>
+
+            <!-- ================================================
+       KAMERA
+       ================================================ -->
+
+            <section class="control-group">
+              <div class="control-heading-row">
+                <h3>Kamera</h3>
+
+                <strong id="cameraStatus" class="small-status">
+                  Pausiert
+                </strong>
+              </div>
+
+              <div class="status-list compact-status">
+                <div class="status-row">
+                  <span> Horizontal </span>
+
+                  <strong id="cameraAzimuthDisplay"> 35° </strong>
+                </div>
+
+                <div class="status-row">
+                  <span> Höhe </span>
+
+                  <strong id="cameraElevationDisplay"> 25° </strong>
+                </div>
+              </div>
+
+              <div class="compact-button-row">
+                <button
+                  id="toggleCamera"
+                  class="control-button"
+                  type="button"
+                  aria-pressed="false"
+                >
+                  Fahrt starten
+                </button>
+
+                <button
+                  id="topView"
+                  class="control-button"
+                  type="button"
+                  aria-pressed="false"
+                >
+                  Draufsicht
+                </button>
+              </div>
+
+              <p class="control-hint compact-hint">
+                <strong>K</strong> Kamerafahrt · <strong>O</strong> Draufsicht ·
+                Pfeiltasten manuell
+              </p>
+            </section>
+
+            <!-- ================================================
+       LICHT
+       ================================================ -->
+
+            <section class="control-group">
+              <h3>Licht</h3>
+
+              <div class="status-list compact-status">
+                <div class="status-row">
+                  <span> Winkel </span>
+
+                  <strong id="lightAngleDisplay"> 50° </strong>
+                </div>
+
+                <div class="status-row">
+                  <span> Schritt </span>
+
+                  <strong> 15° </strong>
+                </div>
+              </div>
+
+              <button id="moveLight" class="control-button" type="button">
+                Licht weiterschalten
+              </button>
+
+              <p class="control-hint compact-hint">Taste <strong>L</strong></p>
+            </section>
+
+            <!-- ================================================
+       TECHNIK
+       ================================================ -->
+
+            <section class="control-group control-group-technical">
+              <h3>Technik</h3>
+
+              <div class="technical-grid">
+                <div class="technical-item">
+                  <span> U / S </span>
+
+                  <strong> Torus </strong>
+                </div>
+
+                <div class="technical-item">
+                  <span> V / T </span>
+
+                  <strong> Rohr </strong>
+                </div>
+
+                <div class="technical-item">
+                  <span> UV </span>
+
+                  <strong> 0 … 1 </strong>
+                </div>
+
+                <div class="technical-item">
+                  <span> Texture Unit </span>
+
+                  <strong> 0 </strong>
+                </div>
+
+                <div class="technical-item technical-item-wide">
+                  <span> Bildtextur </span>
+
+                  <strong> 1024 × 1024 px </strong>
+                </div>
+              </div>
+            </section>
+          </aside>
+        </div>
+      </section>
+
+      <!-- ==================================================
+         04 – TEXTURKOORDINATEN
+         ================================================== -->
+
+      <section class="section">
+        <div class="section-header">
+          <div>
+            <p class="section-number">04</p>
+
+            <h2>Texturkoordinaten</h2>
+          </div>
+        </div>
+
+        <div class="documentation-grid">
+          <article>
+            <h3>Parametrischer Torus</h3>
+
+            <p>
+              Der Torus wird aus zwei Parameterrichtungen erzeugt. Eine Richtung
+              läuft um den gesamten Torus, die zweite Richtung umläuft den
+              Querschnitt des Torusrohrs.
+            </p>
+
+            <p>
+              Diese beiden Richtungen eignen sich direkt für die Berechnung der
+              zweidimensionalen Texturkoordinaten.
+            </p>
+          </article>
+
+          <article>
+            <h3>UV-Mapping</h3>
+
+            <p>
+              Für jeden erzeugten Vertex werden zwei zusätzliche Werte zwischen
+              0 und 1 gespeichert.
+            </p>
+
+            <div class="formula-block">
+              <p>s = i / majorSegments</p>
+
+              <p>t = j / minorSegments</p>
+            </div>
+
+            <p>
+              Damit wird die vollständige Textur einmal um beide parametrischen
+              Richtungen des Torus gelegt.
+            </p>
+          </article>
+
+          <article>
+            <h3>Texture-VBO</h3>
+
+            <p>
+              Die Texturkoordinaten werden entsprechend der Lerneinheit TXR in
+              einem eigenen Vertex Buffer Object gespeichert.
+            </p>
+
+            <div class="formula-block">
+              <p>model.vboTextureCoord</p>
+            </div>
+
+            <p>
+              Beim Zeichnen wird dieser Buffer mit dem Shader- Attribut
+              <code>aTextureCoord</code> verbunden.
+            </p>
+          </article>
+
+          <article>
+            <h3>Übergabe an den Fragment-Shader</h3>
+
+            <p>
+              Der Vertex-Shader übernimmt die Texturkoordinaten über
+              <code>aTextureCoord</code> und gibt sie als
+              <code>vTextureCoord</code> an den Fragment-Shader weiter.
+            </p>
+
+            <div class="formula-block">
+              <p>vTextureCoord = aTextureCoord</p>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <!-- ==================================================
+         05 – BILDTEXTUR
+         ================================================== -->
+
+      <section class="section">
+        <div class="section-header">
+          <div>
+            <p class="section-number">05</p>
+
+            <h2>Bildtextur</h2>
+          </div>
+        </div>
+
+        <div class="documentation-grid">
+          <article>
+            <h3>Laden der Bilddatei</h3>
+
+            <p>
+              Die Bildtextur wird mit einem JavaScript-
+              <code>Image</code>-Objekt geladen. Nach erfolgreichem Laden werden
+              die Bilddaten an ein WebGL-Texture-Objekt übertragen.
+            </p>
+
+            <div class="formula-block">
+              <p>gl.createTexture()</p>
+
+              <p>gl.texImage2D(...)</p>
+            </div>
+          </article>
+
+          <article>
+            <h3>Texture Unit</h3>
+
+            <p>
+              Beim Rendern wird die geladene Bildtextur an
+              <code>TEXTURE0</code> gebunden und über den
+              <code>sampler2D</code> des Fragment-Shaders gelesen.
+            </p>
+
+            <div class="formula-block">
+              <p>gl.activeTexture(gl.TEXTURE0)</p>
+
+              <p>uniform sampler2D uTexture</p>
+            </div>
+          </article>
+
+          <article>
+            <h3>Fragmentfarbe</h3>
+
+            <p>
+              Im Bildtextur-Modus wird die Fragmentfarbe anhand der
+              interpolierten Texturkoordinaten aus der Bildtextur gelesen.
+            </p>
+
+            <div class="formula-block">
+              <p>texture2D(uTexture, vTextureCoord)</p>
+            </div>
+          </article>
+
+          <article>
+            <h3>Gestaltung der Bildtextur</h3>
+
+            <p>
+              Für diese Aufgabe wurde eine eigene KI-generierte Ausgangstextur
+              im Stil von türkisfarbenem und dunkelblauem Marmor beziehungsweise
+              poliertem Mineralgestein erstellt. Dabei wurden helle Adern,
+              dunkle Bereiche und unterschiedliche Türkistöne verwendet, damit
+              die Verteilung der Textur auf der gekrümmten Torusoberfläche
+              deutlich erkennbar bleibt.
+            </p>
+
+            <p>
+              Die Ausgangsgrafik wurde anschließend für die Verwendung in WebGL
+              auf eine quadratische Auflösung von 1024 × 1024 Pixeln angepasst
+              und als <code>torus-texture.png</code> gespeichert. Es wurde keine
+              fremde Bilddatei direkt als fertige Textur übernommen.
+            </p>
+
+            <p>
+              Die Textur wurde speziell für diese Einsendeaufgabe mit der
+              Bildgenerierung von ChatGPT erstellt und anschließend für die
+              Verwendung im Projekt angepasst.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <!-- ==================================================
+         06 – PROZEDURALE TEXTUR
+         ================================================== -->
+
+      <section class="section">
+        <div class="section-header">
+          <div>
+            <p class="section-number">06</p>
+
+            <h2>Erweiterung: prozedurale Textur</h2>
+          </div>
+        </div>
+
+        <div class="documentation-grid">
+          <article>
+            <h3>Ohne zusätzliche Bilddatei</h3>
+
+            <p>
+              Die prozedurale Textur wird vollständig im Fragment-Shader
+              berechnet und benötigt keine zusätzliche Bilddatei.
+            </p>
+
+            <p>
+              Grundlage sind dieselben interpolierten Texturkoordinaten
+              <code>vTextureCoord</code>, die auch für die Bildtextur verwendet
+              werden.
+            </p>
+          </article>
+
+          <article>
+            <h3>Periodisches Muster</h3>
+
+            <p>
+              Die Texturkoordinaten werden zunächst auf einen Winkelbereich von
+              0 bis 2π abgebildet. Anschließend werden mehrere periodische
+              Sinus- und Kosinusfunktionen miteinander kombiniert.
+            </p>
+
+            <p>
+              Durch ganzzahlige Frequenzen besitzen Anfang und Ende der Textur
+              dieselben Funktionswerte. Dadurch kann das Muster ohne harte
+              sichtbare Naht um den geschlossenen Torus laufen.
+            </p>
+          </article>
+
+          <article>
+            <h3>Animation und Farbgebung</h3>
+
+            <p>
+              Ein Zeitwert wird als Uniform an den Fragment-Shader übergeben und
+              verändert langsam die Phasen mehrerer Wellenfunktionen. Dadurch
+              entsteht eine ruhige, fließende Bewegung des prozeduralen Musters.
+            </p>
+
+            <p>
+              Die berechneten Werte mischen dunkle Petroltöne, Türkis und helle
+              Minttöne. Zusätzliche schmale Strukturen erzeugen den Eindruck
+              feiner mineralischer beziehungsweise marmorartiger Adern.
+            </p>
+          </article>
+
+          <article>
+            <h3>Direkter Vergleich</h3>
+
+            <p>
+              Über die sichtbaren Schaltflächen kann jederzeit zwischen der
+              geladenen Bildtextur und der prozedural berechneten Oberfläche
+              gewechselt werden.
+            </p>
+
+            <p>
+              Die Bildtextur bleibt statisch, während die prozedurale Variante
+              animiert ist. Beide Varianten verwenden jedoch dieselben
+              UV-Koordinaten des Torus.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <!-- ==================================================
+         07 – KAMERA
+         ================================================== -->
+
+      <section class="section">
+        <div class="section-header">
+          <div>
+            <p class="section-number">07</p>
+
+            <h2>Kamera und Beleuchtung</h2>
+          </div>
+        </div>
+
+        <div class="documentation-grid">
+          <article>
+            <h3>Manuelle Kamerasteuerung</h3>
+
+            <p>
+              Mit den Pfeiltasten kann die Kamera horizontal um den Torus bewegt
+              und ihr vertikaler Blickwinkel verändert werden.
+            </p>
+
+            <p>
+              Dadurch kann die Textur auf Außen-, Innen- und Rückseite des
+              gekrümmten Modells aus unterschiedlichen Perspektiven untersucht
+              werden.
+            </p>
+          </article>
+
+          <article>
+            <h3>Automatische Kamerafahrt</h3>
+
+            <p>
+              Zusätzlich steht eine automatische Kamerafahrt auf einer Kreisbahn
+              um den Torus zur Verfügung.
+            </p>
+
+            <p>
+              Sie wird über die Taste <code>K</code> oder über die entsprechende
+              Schaltfläche gestartet und pausiert. Die manuelle Kamerasteuerung
+              bleibt weiterhin verfügbar.
+            </p>
+          </article>
+
+          <article>
+            <h3>Draufsicht und Fokus</h3>
+
+            <p>
+              Über die Taste <code>O</code> oder die Schaltfläche „Draufsicht“
+              kann auf eine hohe Kameraperspektive gewechselt werden.
+            </p>
+
+            <p>
+              Unabhängig von der gewählten Perspektive bleibt die Kamera auf den
+              Mittelpunkt des Torus ausgerichtet, sodass das texturierte Modell
+              im Zentrum der Darstellung bleibt.
+            </p>
+          </article>
+
+          <article>
+            <h3>Bewegliche Lichtquelle</h3>
+
+            <p>
+              Die Szene verwendet eine Punktlichtquelle, deren Position
+              schrittweise auf einer Kreisbahn um den Torus bewegt werden kann.
+            </p>
+
+            <p>
+              Mit der Taste <code>L</code> oder der Schaltfläche „Licht
+              weiterschalten“ wird die Lichtposition jeweils um 15 Grad
+              verändert. Dadurch lassen sich diffuse Beleuchtung und
+              Glanzlichter aus verschiedenen Richtungen betrachten, ohne die
+              Texturkoordinaten zu verändern.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <!-- ==================================================
+         08 – DOKUMENTATION
+         ================================================== -->
+
+      <section class="section documentation">
+        <div class="section-header">
+          <div>
+            <p class="section-number">08</p>
+
+            <h2>Dokumentation</h2>
+          </div>
+        </div>
+
+        <div class="documentation-grid">
+          <article>
+            <h3>Ausgangspunkt</h3>
+
+            <p>
+              Die Implementierung der Bildtextur orientiert sich an der
+              Lerneinheit TXR.
+            </p>
+
+            <p>
+              Verwendet wurden insbesondere der dort beschriebene Ablauf zum
+              Laden einer Bilddatei über <code>Image</code> und
+              <code>initTexture()</code>, das eigene Texture-VBO sowie die
+              Übergabe der Textur über <code>sampler2D</code> und Texture Unit
+              0.
+            </p>
+          </article>
+
+          <article>
+            <h3>Umgesetzte Erweiterungen</h3>
+
+            <p>
+              Als bewertete Erweiterung wurde eine prozedurale Textur umgesetzt,
+              die vollständig im Fragment-Shader erzeugt und über die
+              Benutzeroberfläche mit der Bildtextur verglichen werden kann.
+            </p>
+
+            <p>
+              Zusätzlich wurden eine langsame Animation des prozeduralen
+              Musters, eine optionale automatische Kamerafahrt, eine Draufsicht
+              und eine schrittweise bewegliche Lichtquelle ergänzt.
+            </p>
+          </article>
+
+          <article>
+            <h3>Test und Qualitätssicherung</h3>
+
+            <p>
+              Die Anwendung wurde in Google Chrome unter macOS getestet. Geprüft
+              wurden das Laden der 1024 × 1024 Pixel großen Bildtextur, die
+              vollständige Texturabbildung auf dem Torus sowie der Wechsel
+              zwischen Bildtextur und prozeduraler Textur.
+            </p>
+
+            <p>
+              Zusätzlich wurden die manuelle Kamerasteuerung, die automatische
+              Kamerafahrt, die Draufsicht, die Animation der prozeduralen Textur
+              und die schrittweise Bewegung der Lichtquelle getestet.
+            </p>
+
+            <p>
+              Die Anwendung wurde über einen Webserver beziehungsweise GitHub
+              Pages ausgeführt. Abschließend wurde die Browserkonsole auf
+              JavaScript-, Shader-, WebGL- und Ladefehler kontrolliert.
+            </p>
+          </article>
+
+          <article>
+            <h3>Quellen und verwendete Hilfsmittel</h3>
+
+            <ul class="source-list">
+              <li>
+                Lerneinheit TXR: Laden und Verwenden von Bildtexturen in WebGL.
+              </li>
+
+              <li>
+                Lerneinheit TXR: Texturkoordinaten und
+                <code>model.vboTextureCoord</code>.
+              </li>
+
+              <li>
+                Lerneinheit TXR:
+                <code>sampler2D</code>, <code>texture2D()</code> und Texture
+                Unit 0.
+              </li>
+
+              <li>
+                glMatrix 2.2.0 aus dem bereitgestellten Lehrmaterial: Matrix-
+                und Vektoroperationen.
+              </li>
+
+              <li>
+                Bildtextur: speziell für diese Einsendeaufgabe mit der
+                Bildgenerierung von ChatGPT erzeugt und anschließend auf 1024 ×
+                1024 Pixel für die WebGL-Verwendung angepasst.
+              </li>
+            </ul>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <!-- ==================================================
+       FOOTER
+       ================================================== -->
+
+    <footer class="page-footer">
+      <div class="container">
+        <p>Graphical Visualisation Technologies</p>
+      </div>
+    </footer>
+  </body>
+</html>
