@@ -1,0 +1,914 @@
+<!doctype html>
+
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <meta
+      name="description"
+      content="Einsendeaufgabe 08: Dynamische Lichtquellen auf einer Kreisbahn und farbiges Toon-Shading mit WebGL."
+    />
+
+    <title>Aufgabe 08 | Lichter auf einer Kreisbahn mit Toon Shading</title>
+
+    <link rel="stylesheet" href="style.css" />
+
+    <script src="../ext/gl-matrix.js" defer></script>
+
+    <script src="app.js" defer></script>
+  </head>
+
+  <body>
+    <!-- ==================================================
+       KOPFBEREICH
+       ================================================== -->
+
+    <header class="page-header">
+      <div class="container">
+        <a class="back-link" href="../">
+          <span aria-hidden="true">←</span>
+          Zur Übersicht
+        </a>
+
+        <p class="module-name">Graphical Visualisation Technologies</p>
+
+        <h1>Lichter auf einer Kreisbahn mit Toon Shading</h1>
+
+        <p class="subtitle">Einsendeaufgabe 08</p>
+      </div>
+    </header>
+
+    <main class="container">
+      <!-- ==================================================
+         01 – AUFGABENIDEE
+         ================================================== -->
+
+      <section class="section introduction">
+        <div class="section-header">
+          <div>
+            <p class="section-number">01</p>
+
+            <h2>Dynamische Beleuchtung</h2>
+          </div>
+        </div>
+
+        <p>
+          Die Szene orientiert sich an den Beleuchtungsbeispielen BEL 02 und BEL
+          03. Sie besteht aus einem roten Torus, einer grünen und einer blauen
+          Kugel sowie einer weißen Ebene mit unterschiedlichen
+          Phong-Materialeigenschaften.
+        </p>
+
+        <p>
+          Zwei weiße Punktlichtquellen befinden sich auf einer gemeinsamen
+          Kreisbahn um die Modelle. Mit jedem Druck auf die Taste
+          <code>L</code> werden beide Lichtquellen gleichzeitig um einen festen
+          Winkel von 15 Grad weiterbewegt.
+        </p>
+
+        <p>
+          Die zweite Lichtquelle befindet sich dabei immer um 180 Grad versetzt
+          auf der gegenüberliegenden Seite der Kreisbahn. Beide Lichtquellen
+          bewegen sich unabhängig von der Kamera und bleiben als Positionen
+          innerhalb der Szene definiert.
+        </p>
+
+        <p>
+          Als Erweiterung ist ein farbiges Toon-Shading im Fragment-Shader
+          implementiert. Mit der Taste
+          <code>T</code> kann jederzeit zwischen Toon-Shading und normaler
+          Phong-Beleuchtung gewechselt werden.
+        </p>
+
+        <p>
+          Zusätzlich bewegt sich die Kamera automatisch langsam um die Szene.
+          Diese Kamerafahrt dient ausschließlich der besseren Betrachtung der
+          Beleuchtung und kann pausiert, manuell verändert oder auf eine
+          Draufsicht umgeschaltet werden.
+        </p>
+      </section>
+
+      <!-- ==================================================
+         02 – BEDIENUNG
+         ================================================== -->
+
+      <section class="section">
+        <div class="section-header">
+          <div>
+            <p class="section-number">02</p>
+
+            <h2>Bedienung</h2>
+          </div>
+        </div>
+
+        <div class="interaction-grid">
+          <article class="interaction-card">
+            <kbd> L </kbd>
+
+            <div>
+              <strong> Lichtquellen bewegen </strong>
+
+              <p>
+                Jeder Tastendruck bewegt beide Lichtquellen gleichzeitig um 15
+                Grad auf ihrer Kreisbahn. Groß- und Kleinschreibung haben keinen
+                Einfluss.
+              </p>
+            </div>
+          </article>
+
+          <article class="interaction-card">
+            <kbd> T </kbd>
+
+            <div>
+              <strong> Toon-Shading umschalten </strong>
+
+              <p>
+                Schaltet zwischen der normalen Phong-Beleuchtung und der
+                farbigen Toon-Schattierung um.
+              </p>
+            </div>
+          </article>
+
+          <article class="interaction-card">
+            <div class="key-combination">
+              <kbd>P</kbd>
+
+              <span>/</span>
+
+              <kbd>Space</kbd>
+            </div>
+
+            <div>
+              <strong> Kamerafahrt pausieren </strong>
+
+              <p>
+                Pausiert beziehungsweise startet die automatische Kamerafahrt um
+                die Szene.
+              </p>
+            </div>
+          </article>
+
+          <article class="interaction-card">
+            <kbd> O </kbd>
+
+            <div>
+              <strong> Draufsicht </strong>
+
+              <p>
+                Schaltet zwischen der normalen Kameraperspektive und einer hohen
+                Draufsicht auf die Szene um.
+              </p>
+            </div>
+          </article>
+
+          <article class="interaction-card">
+            <div class="key-combination">
+              <kbd>←</kbd>
+
+              <span>/</span>
+
+              <kbd>→</kbd>
+            </div>
+
+            <div>
+              <strong> Kamera horizontal bewegen </strong>
+
+              <p>
+                Bewegt die Kamera manuell um die Szene und verändert damit den
+                horizontalen Blickwinkel.
+              </p>
+            </div>
+          </article>
+
+          <article class="interaction-card">
+            <div class="key-combination">
+              <kbd>↑</kbd>
+
+              <span>/</span>
+
+              <kbd>↓</kbd>
+            </div>
+
+            <div>
+              <strong> Kamerahöhe verändern </strong>
+
+              <p>
+                Verändert den vertikalen Blickwinkel der Kamera. Dadurch kann
+                die Szene höher oder flacher betrachtet werden.
+              </p>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <!-- ==================================================
+         03 – WEBGL-SZENE
+         ================================================== -->
+
+      <section class="section">
+        <div class="section-header">
+          <div>
+            <p class="section-number">03</p>
+
+            <h2>Szene</h2>
+
+            <p class="section-description">
+              Zwei bewegliche Punktlichter, Phong-Materialien und Toon-Shading
+            </p>
+          </div>
+        </div>
+
+        <div class="scene-layout">
+          <!-- WebGL-Canvas -->
+
+          <div class="canvas-container">
+            <canvas id="sceneCanvas" width="1000" height="650">
+              Dein Browser unterstützt Canvas nicht.
+            </canvas>
+          </div>
+
+          <!-- Steuerung -->
+
+          <aside class="control-panel">
+            <!-- Shader -->
+
+            <section class="control-group">
+              <h3>Shader</h3>
+
+              <div class="status-list">
+                <div class="status-row">
+                  <span> Toon-Shading </span>
+
+                  <strong id="toonStatus"> Ein </strong>
+                </div>
+
+                <div class="status-row">
+                  <span> Modus </span>
+
+                  <strong id="shaderMode"> Toon </strong>
+                </div>
+              </div>
+
+              <button
+                id="toggleToon"
+                class="control-button active"
+                type="button"
+                aria-pressed="true"
+              >
+                Toon-Shading ausschalten
+              </button>
+
+              <p class="control-hint">
+                Alternativ kann der Shader mit der Taste
+                <strong>T</strong> umgeschaltet werden.
+              </p>
+            </section>
+
+            <!-- Kamera -->
+
+            <section class="control-group">
+              <h3>Kamera</h3>
+
+              <div class="status-list">
+                <div class="status-row">
+                  <span> Kamerafahrt </span>
+
+                  <strong id="cameraStatus"> Läuft </strong>
+                </div>
+
+                <div class="status-row">
+                  <span> Bewegung </span>
+
+                  <strong> Kreisbahn </strong>
+                </div>
+              </div>
+
+              <button
+                id="toggleCamera"
+                class="control-button active"
+                type="button"
+                aria-pressed="true"
+              >
+                Kamera pausieren
+              </button>
+
+              <button id="topView" class="control-button" type="button">
+                Draufsicht
+              </button>
+
+              <p class="control-hint">
+                Die Kamerafahrt startet automatisch.
+                <strong>P</strong> oder die Leertaste pausieren sie. Mit
+                <strong>O</strong> wird die Draufsicht umgeschaltet.
+              </p>
+            </section>
+
+            <!-- Lichtquellen -->
+
+            <section class="control-group">
+              <h3>Lichtquellen</h3>
+
+              <div class="status-list">
+                <div class="status-row">
+                  <span> Anzahl </span>
+
+                  <strong> 2 </strong>
+                </div>
+
+                <div class="status-row">
+                  <span> Kreiswinkel </span>
+
+                  <strong id="lightAngleDisplay"> 45° </strong>
+                </div>
+
+                <div class="status-row">
+                  <span> Winkelschritt </span>
+
+                  <strong> 15° </strong>
+                </div>
+
+                <div class="status-row">
+                  <span> Abstand </span>
+
+                  <strong> 180° </strong>
+                </div>
+              </div>
+
+              <button id="moveLights" class="control-button" type="button">
+                Lichter weiterschalten
+              </button>
+
+              <p class="control-hint">
+                Der Button entspricht einem Druck auf
+                <strong>L</strong>.
+              </p>
+            </section>
+
+            <!-- Licht 1 -->
+
+            <section class="control-group">
+              <h3>Licht 1</h3>
+
+              <div class="status-list">
+                <div class="status-row">
+                  <span> X </span>
+
+                  <strong id="light1X"> 3.04 </strong>
+                </div>
+
+                <div class="status-row">
+                  <span> Y </span>
+
+                  <strong id="light1Y"> 2.40 </strong>
+                </div>
+
+                <div class="status-row">
+                  <span> Z </span>
+
+                  <strong id="light1Z"> 3.04 </strong>
+                </div>
+              </div>
+            </section>
+
+            <!-- Licht 2 -->
+
+            <section class="control-group">
+              <h3>Licht 2</h3>
+
+              <div class="status-list">
+                <div class="status-row">
+                  <span> X </span>
+
+                  <strong id="light2X"> -3.04 </strong>
+                </div>
+
+                <div class="status-row">
+                  <span> Y </span>
+
+                  <strong id="light2Y"> 2.40 </strong>
+                </div>
+
+                <div class="status-row">
+                  <span> Z </span>
+
+                  <strong id="light2Z"> -3.04 </strong>
+                </div>
+              </div>
+            </section>
+          </aside>
+        </div>
+      </section>
+
+      <!-- ==================================================
+         04 – LICHTBEWEGUNG
+         ================================================== -->
+
+      <section class="section">
+        <div class="section-header">
+          <div>
+            <p class="section-number">04</p>
+
+            <h2>Kreisbahn der Lichtquellen</h2>
+          </div>
+        </div>
+
+        <div class="documentation-grid">
+          <article>
+            <h3>Ausgangspunkt BEL 02</h3>
+
+            <p>
+              In BEL 02 werden zwei weiße Lichtquellen an gegenüberliegenden
+              Positionen der Szene verwendet. Dieses Prinzip wird für die
+              Einsendeaufgabe beibehalten und um eine Kreisbewegung erweitert.
+            </p>
+
+            <p>
+              Für die übersichtlichere Visualisierung wurde die Kreisbahn etwas
+              vergrößert und höher über der Szene positioniert. Die beiden
+              Lichtquellen bleiben dabei stets gegenüberliegend.
+            </p>
+          </article>
+
+          <article>
+            <h3>Kreisgleichung</h3>
+
+            <p>
+              Die X- und Z-Koordinaten der ersten Lichtquelle werden mit Sinus
+              und Kosinus aus einem gemeinsamen Winkel berechnet. Die
+              Y-Koordinate bleibt konstant.
+            </p>
+
+            <div class="formula-block">
+              <p>x₁ = r · cos(φ)</p>
+
+              <p>z₁ = r · sin(φ)</p>
+
+              <p>y₁ = konstant</p>
+            </div>
+
+            <p>
+              Bei jedem Druck auf <code>L</code> wird <code>φ</code> um 15 Grad
+              erhöht.
+            </p>
+          </article>
+
+          <article>
+            <h3>Zweite Lichtquelle</h3>
+
+            <p>
+              Die zweite Lichtquelle verwendet dieselbe Kreisbahn, aber einen um
+              180 Grad verschobenen Winkel.
+            </p>
+
+            <div class="formula-block">
+              <p>φ₂ = φ₁ + π</p>
+            </div>
+
+            <p>
+              Dadurch bewegen sich beide Lichter gleichzeitig in derselben
+              Richtung und bleiben während der gesamten Bewegung auf
+              gegenüberliegenden Seiten der Szene.
+            </p>
+          </article>
+
+          <article>
+            <h3>Unabhängig von der Kamera</h3>
+
+            <p>
+              Die Lichtpositionen werden im Welt- beziehungsweise
+              Szenenkoordinatensystem gespeichert. Die automatische Bewegung der
+              Kamera verändert diese Positionen nicht.
+            </p>
+
+            <p>
+              Erst beim Rendern werden Kopien der Lichtpositionen mit der
+              View-Matrix der Kamera in Eye Coordinates transformiert und
+              anschließend an den Shader übergeben.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <!-- ==================================================
+         05 – TOON-SHADING
+         ================================================== -->
+
+      <section class="section">
+        <div class="section-header">
+          <div>
+            <p class="section-number">05</p>
+
+            <h2>Erweiterung: Toon-Shading</h2>
+          </div>
+        </div>
+
+        <div class="documentation-grid">
+          <article>
+            <h3>Fragment-Shader</h3>
+
+            <p>
+              Das Toon-Shading wird entsprechend der Aufgabenstellung im
+              Fragment-Shader umgesetzt.
+            </p>
+
+            <p>
+              Die Berechnung verwendet weiterhin die Oberflächennormale, die
+              Blickrichtung sowie die Richtungen zu beiden Lichtquellen.
+            </p>
+          </article>
+
+          <article>
+            <h3>Diskrete Helligkeitsstufen</h3>
+
+            <p>
+              Bei normaler Phong-Beleuchtung verändert sich der diffuse
+              Lichtanteil kontinuierlich. Im Toon-Modus wird dieser Wert
+              stattdessen auf wenige feste Helligkeitsstufen reduziert.
+            </p>
+
+            <div class="formula-block">
+              <p>stark beleuchtet → 1.00</p>
+
+              <p>hell → 0.78</p>
+
+              <p>mittel → 0.52</p>
+
+              <p>Schatten → 0.30</p>
+            </div>
+          </article>
+
+          <article>
+            <h3>Erhaltene Materialfarben</h3>
+
+            <p>
+              Die Toon-Schattierung verändert die grundlegenden Farben der
+              Modelle nicht.
+            </p>
+
+            <p>
+              Der Torus bleibt rot, die beiden Kugeln bleiben grün
+              beziehungsweise blau und die Ebene bleibt neutral. Lediglich die
+              durch die Beleuchtung erzeugte Helligkeitsabstufung wird
+              stilisiert.
+            </p>
+          </article>
+
+          <article>
+            <h3>Silhouette und Glanzlicht</h3>
+
+            <p>
+              Spekulare Glanzlichter werden im Toon-Modus auf einen klaren,
+              reduzierten Zustand beschränkt.
+            </p>
+
+            <p>
+              Zusätzlich werden Fragmente an sehr flachen Blickwinkeln
+              abgedunkelt. Dadurch entsteht ein dezenter Silhouetteneffekt, der
+              die Formen der Grundkörper stärker hervorhebt.
+            </p>
+          </article>
+
+          <article>
+            <h3>Direkter Vergleich</h3>
+
+            <p>
+              Mit der Taste <code>T</code> kann jederzeit zwischen normaler
+              Phong-Beleuchtung und Toon-Shading gewechselt werden.
+            </p>
+
+            <p>
+              Positionen von Kamera, Modellen und Lichtquellen bleiben beim
+              Umschalten unverändert, sodass beide Darstellungsarten direkt
+              verglichen werden können.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <!-- ==================================================
+         06 – PHONG-MATERIALIEN
+         ================================================== -->
+
+      <section class="section">
+        <div class="section-header">
+          <div>
+            <p class="section-number">06</p>
+
+            <h2>Phong-Materialien</h2>
+          </div>
+        </div>
+
+        <div class="documentation-grid">
+          <article>
+            <h3>Materialstruktur</h3>
+
+            <p>
+              Die Materialstruktur orientiert sich an BEL 03 und besitzt
+              getrennte Parameter für ambienten, diffusen und spekularen Anteil
+              sowie die Glanzhärte.
+            </p>
+
+            <div class="formula-block">
+              <p>ka → ambient</p>
+
+              <p>kd → diffuse</p>
+
+              <p>ks → specular</p>
+
+              <p>ke → shininess</p>
+            </div>
+          </article>
+
+          <article>
+            <h3>Farbige Modelle</h3>
+
+            <p>
+              Torus und Kugeln besitzen unterschiedliche diffuse Materialfarben.
+            </p>
+
+            <p>
+              Dadurch bleiben die ursprünglichen Objektfarben auch während des
+              Toon-Shadings erhalten und die Beleuchtungsstufen lassen sich auf
+              verschiedenen Farben vergleichen.
+            </p>
+          </article>
+
+          <article>
+            <h3>Weiße Ebene</h3>
+
+            <p>
+              Die Ebene verwendet entsprechend der Vorgabe aus BEL 03 keinen
+              spekularen Anteil.
+            </p>
+
+            <div class="formula-block">
+              <p>ks = (0, 0, 0)</p>
+            </div>
+
+            <p>
+              Dadurch entstehen auf der Ebene keine spekularen Glanzlichter.
+            </p>
+          </article>
+
+          <article>
+            <h3>Zwei weiße Lichtquellen</h3>
+
+            <p>
+              Beide Lichtquellen verwenden weißes Licht. Ihre
+              Beleuchtungsbeiträge werden gemeinsam im Fragment-Shader
+              berücksichtigt.
+            </p>
+
+            <p>
+              Durch die gegenüberliegenden Positionen und die schrittweise
+              Kreisbewegung entstehen wechselnde Beleuchtungssituationen auf
+              allen Modellen.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <!-- ==================================================
+         07 – KAMERA
+         ================================================== -->
+
+      <section class="section">
+        <div class="section-header">
+          <div>
+            <p class="section-number">07</p>
+
+            <h2>Kameraführung</h2>
+          </div>
+        </div>
+
+        <div class="documentation-grid">
+          <article>
+            <h3>Automatische Kamerafahrt</h3>
+
+            <p>
+              Nach dem Laden der Webseite bewegt sich die Kamera automatisch
+              langsam auf einer Kreisbahn um die Szene.
+            </p>
+
+            <p>
+              Dadurch können Beleuchtung, Toon-Stufen und räumliche Anordnung
+              der Modelle aus mehreren Blickwinkeln betrachtet werden.
+            </p>
+          </article>
+
+          <article>
+            <h3>Licht und Kamera getrennt</h3>
+
+            <p>
+              Die automatische Kamerabewegung verändert nicht die Positionen der
+              Lichtquellen.
+            </p>
+
+            <p>
+              Dadurch lässt sich erkennen, dass die Lichter als eigenständige
+              Objekte der Szene behandelt werden und nicht wie ein an der Kamera
+              befestigtes Licht mitwandern.
+            </p>
+          </article>
+
+          <article>
+            <h3>Pause und manuelle Ansicht</h3>
+
+            <p>
+              Mit <code>P</code> oder der Leertaste kann die automatische
+              Kamerafahrt pausiert beziehungsweise fortgesetzt werden.
+            </p>
+
+            <p>
+              Zusätzlich kann die Kamera mit den Pfeiltasten horizontal um die
+              Szene bewegt und in ihrer Höhe verändert werden.
+            </p>
+          </article>
+
+          <article>
+            <h3>Draufsicht</h3>
+
+            <p>
+              Mit <code>O</code> oder der entsprechenden Schaltfläche kann auf
+              eine hohe Kameraperspektive gewechselt werden.
+            </p>
+
+            <p>
+              Dadurch lässt sich insbesondere die räumliche Anordnung der
+              Modelle sowie die Kreisbahn der Lichtquellen besser beurteilen.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <!-- ==================================================
+         08 – DOKUMENTATION
+         ================================================== -->
+
+      <section class="section documentation">
+        <div class="section-header">
+          <div>
+            <p class="section-number">08</p>
+
+            <h2>Dokumentation</h2>
+          </div>
+        </div>
+
+        <div class="documentation-grid">
+          <article>
+            <h3>Ausgangspunkt</h3>
+
+            <p>
+              Die Beleuchtungs- und Materialstruktur orientiert sich an den
+              Beispielaufgaben BEL 02 und BEL 03.
+            </p>
+
+            <p>
+              BEL 02 liefert das Prinzip der beiden weißen Lichtquellen und
+              deren Übergabe an den Shader. BEL 03 liefert die
+              Phong-Materialstruktur sowie die unterschiedlichen Materialien für
+              Torus, Kugeln und Ebene.
+            </p>
+
+            <p>
+              Für diese Einsendeaufgabe wurde die bestehende Beleuchtung um eine
+              schrittweise Kreisbewegung beider Lichtquellen erweitert.
+            </p>
+          </article>
+
+          <article>
+            <h3>Bearbeitete Erweiterung</h3>
+
+            <p>
+              Bearbeitet wurde die Erweiterung
+              <strong>Toon-Shading</strong>.
+            </p>
+
+            <p>
+              Das Toon-Shading ist im Fragment-Shader implementiert. Die
+              kontinuierliche Beleuchtungsintensität wird dabei auf wenige
+              diskrete Helligkeitsstufen reduziert.
+            </p>
+
+            <p>
+              Die ursprünglichen Materialfarben der Szene bleiben erhalten. Mit
+              der Taste <code>T</code> kann jederzeit zwischen Toon-Shading und
+              normaler Phong-Beleuchtung gewechselt werden.
+            </p>
+          </article>
+
+          <article>
+            <h3>Test und Qualitätssicherung</h3>
+
+            <p>
+              Für die finale Abgabe wurden die schrittweise Lichtbewegung mit
+              <code>L</code>, das Umschalten des Toon-Shadings mit
+              <code>T</code> sowie die zusätzliche Kamerasteuerung getestet.
+            </p>
+
+            <p>
+              Dabei wurde überprüft, dass <code>l</code> und
+              <code>L</code> denselben Effekt besitzen und beide Lichtquellen
+              bei jedem Tastendruck gleichzeitig um 15 Grad weiterbewegt werden.
+            </p>
+
+            <p>
+              Zusätzlich wurde kontrolliert, dass sich beide Lichtquellen auf
+              derselben Kreisbahn bewegen und ihr Winkelabstand von 180 Grad
+              während der gesamten Bewegung erhalten bleibt.
+            </p>
+
+            <p>
+              Weiterhin wurde geprüft, dass die Lichtpositionen unabhängig von
+              der automatischen und manuellen Kamerabewegung bleiben.
+            </p>
+
+            <p>
+              Beim Wechsel zwischen Phong- und Toon-Shading wurde überprüft,
+              dass die Materialfarben erhalten bleiben und die diskreten
+              Helligkeitsstufen des Toon-Shaders sichtbar werden.
+            </p>
+
+            <p>
+              Abschließend wurde die Browserkonsole in Google Chrome auf
+              JavaScript-, Shader- und WebGL-Fehler überprüft.
+            </p>
+          </article>
+
+          <article>
+            <h3>Quellen und verwandtes Material</h3>
+
+            <ul class="source-list">
+              <li>
+                Lerneinheit BEL 02: zwei weiße Lichtquellen und Übergabe der
+                Lichtpositionen an den Shader.
+              </li>
+
+              <li>
+                Lerneinheit BEL 03: Phong-Materialien für Torus, Kugeln und
+                Ebene.
+              </li>
+
+              <li>
+                <a
+                  href="https://de.wikipedia.org/wiki/Cel_Shading"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Wikipedia – Cel Shading
+                </a>
+              </li>
+
+              <li>
+                <a
+                  href="https://en.wikipedia.org/wiki/Cel_shading"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Wikipedia – Cel shading
+                </a>
+              </li>
+
+              <li>
+                <a
+                  href="https://en.wikibooks.org/wiki/GLSL_Programming/Unity/Toon_Shading"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Wikibooks – GLSL Programming / Unity / Toon Shading
+                </a>
+              </li>
+
+              <li>
+                <a
+                  href="https://webglsamples.org/toon-shading/toon-shading.html"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  WebGL Samples – Toon Shading Demo
+                </a>
+              </li>
+
+              <li>
+                glMatrix 2.2.0 aus dem bereitgestellten Lehrmaterial: Matrix-
+                und Vektoroperationen.
+              </li>
+            </ul>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <!-- ==================================================
+       FOOTER
+       ================================================== -->
+
+    <footer class="page-footer">
+      <div class="container">
+        <p>Graphical Visualisation Technologies</p>
+      </div>
+    </footer>
+  </body>
+</html>
