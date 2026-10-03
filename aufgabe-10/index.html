@@ -1,0 +1,954 @@
+<!doctype html>
+
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <meta
+      name="description"
+      content="Einsendeaufgabe 10: Dreidimensionale Visualisierung des Seeds-Datensatzes nach Dimensionsreduktion mit t-SNE."
+    />
+
+    <title>Aufgabe 10 | Seeds Daten in 3D</title>
+
+    <link rel="stylesheet" href="style.css" />
+
+    <!-- =====================================================
+       BIBLIOTHEKEN
+
+       glMatrix:
+       Matrix- und Vektoroperationen.
+
+       Papa Parse:
+       Laden und Parsen der CSV-Daten.
+
+       tsne.js:
+       t-SNE-Implementierung aus dem DIM-Kursmaterial.
+       ===================================================== -->
+
+    <script src="../ext/gl-matrix.js" defer></script>
+
+    <script src="../ext/papaparse.min.js" defer></script>
+
+    <script src="../ext/tsne.js" defer></script>
+
+    <!-- Kugel-Geometrie aus dem DIM-Template -->
+
+    <script src="GVT_Src_vertexData_sphere.js" defer></script>
+
+    <!-- Eigene Anwendung -->
+
+    <script src="app.js" defer></script>
+  </head>
+
+  <body>
+    <!-- =====================================================
+       KOPFBEREICH
+       ===================================================== -->
+
+    <header class="page-header">
+      <div class="container">
+        <a class="back-link" href="../">
+          <span aria-hidden="true"> ← </span>
+
+          Zur Übersicht
+        </a>
+
+        <p class="module-name">Graphical Visualisation Technologies</p>
+
+        <h1>Seeds Daten in 3D</h1>
+
+        <p class="subtitle">Einsendeaufgabe 10</p>
+      </div>
+    </header>
+
+    <main class="container">
+      <!-- ===================================================
+         01 – AUFGABENIDEE
+         =================================================== -->
+
+      <section class="section introduction">
+        <div class="section-header">
+          <div>
+            <p class="section-number">01</p>
+
+            <h2>Dimensionsreduktion mit t-SNE</h2>
+          </div>
+        </div>
+
+        <p>
+          Der Seeds-Datensatz beschreibt 210 Weizenkörner anhand von sieben
+          numerischen Merkmalen. Die Datensätze gehören zu den drei Weizensorten
+          <strong>Kama</strong>, <strong>Rosa</strong> und
+          <strong>Canadian</strong>.
+        </p>
+
+        <p>
+          Da sich sieben Merkmale nicht unmittelbar räumlich darstellen lassen,
+          werden die Daten mit dem t-SNE-Algorithmus auf drei Dimensionen
+          reduziert. Die drei resultierenden Werte bestimmen anschließend die
+          X-, Y- und Z-Positionen der Datensätze in einer dreidimensionalen
+          WebGL-Visualisierung.
+        </p>
+
+        <p>
+          Direkt nach dem Laden der Anwendung wird ein zuvor ausgewähltes und
+          gespeichertes t-SNE-Ergebnis dargestellt. Dadurch erscheint bei jedem
+          Seitenaufruf dieselbe Ausgangslösung und die Darstellung ist nicht von
+          einer neuen zufälligen Initialisierung abhängig.
+        </p>
+
+        <p>
+          Über die Schaltflächen beziehungsweise die Tasten
+          <strong>R</strong>, <strong>T</strong> und
+          <strong>Shift + T</strong> kann anschließend ein neuer zufälliger
+          t-SNE-Lauf gestartet und schrittweise weiterberechnet werden.
+        </p>
+      </section>
+
+      <!-- ===================================================
+         02 – BEDIENUNG
+         =================================================== -->
+
+      <section class="section">
+        <div class="section-header">
+          <div>
+            <p class="section-number">02</p>
+
+            <h2>Bedienung</h2>
+          </div>
+        </div>
+
+        <div class="interaction-grid">
+          <!-- Restart -->
+
+          <article class="interaction-card">
+            <kbd> R </kbd>
+
+            <div>
+              <strong> t-SNE neu starten </strong>
+
+              <p>
+                Initialisiert den t-SNE-Algorithmus erneut mit den
+                ursprünglichen Seeds-Daten und einer neuen zufälligen
+                Ausgangskonfiguration. Der Step-Count wird auf 0 gesetzt.
+              </p>
+            </div>
+          </article>
+
+          <!-- Step -->
+
+          <article class="interaction-card">
+            <kbd> T </kbd>
+
+            <div>
+              <strong> Einen t-SNE-Schritt berechnen </strong>
+
+              <p>
+                Führt genau eine weitere Iteration des aktuell laufenden
+                t-SNE-Verfahrens aus.
+              </p>
+            </div>
+          </article>
+
+          <!-- Step 10 -->
+
+          <article class="interaction-card">
+            <div class="key-combination">
+              <kbd> Shift </kbd>
+
+              <span> + </span>
+
+              <kbd> T </kbd>
+            </div>
+
+            <div>
+              <strong> Zehn t-SNE-Schritte berechnen </strong>
+
+              <p>
+                Führt zehn Iterationen direkt hintereinander aus und erhöht den
+                angezeigten Step-Count entsprechend.
+              </p>
+            </div>
+          </article>
+
+          <!-- Kamera horizontal -->
+
+          <article class="interaction-card">
+            <div class="key-combination">
+              <kbd> ← </kbd>
+
+              <span> / </span>
+
+              <kbd> → </kbd>
+            </div>
+
+            <div>
+              <strong> Kamera horizontal drehen </strong>
+
+              <p>
+                Rotiert die Ansicht um die Y-Achse und ermöglicht die
+                Betrachtung der Punktwolke aus unterschiedlichen horizontalen
+                Richtungen.
+              </p>
+            </div>
+          </article>
+
+          <!-- Kamera vertikal -->
+
+          <article class="interaction-card">
+            <div class="key-combination">
+              <kbd> ↑ </kbd>
+
+              <span> / </span>
+
+              <kbd> ↓ </kbd>
+            </div>
+
+            <div>
+              <strong> Kamera vertikal drehen </strong>
+
+              <p>
+                Rotiert die Ansicht um die X-Achse und ermöglicht die
+                Betrachtung der Daten von oben und unten.
+              </p>
+            </div>
+          </article>
+
+          <!-- Vor / zurück -->
+
+          <article class="interaction-card">
+            <div class="key-combination">
+              <kbd> W </kbd>
+
+              <span> / </span>
+
+              <kbd> S </kbd>
+            </div>
+
+            <div>
+              <strong> Kamera vor und zurück bewegen </strong>
+
+              <p>
+                Verschiebt die Kamera entlang der Tiefenrichtung. Dadurch kann
+                die Punktwolke näher betrachtet oder aus größerem Abstand
+                untersucht werden.
+              </p>
+            </div>
+          </article>
+
+          <!-- NAV Rotationen -->
+
+          <article class="interaction-card">
+            <div class="key-combination">
+              <kbd> X </kbd>
+
+              <span>/</span>
+
+              <kbd> Y </kbd>
+
+              <span>/</span>
+
+              <kbd> Z </kbd>
+            </div>
+
+            <div>
+              <strong> Rotation um einzelne Achsen </strong>
+
+              <p>
+                Rotiert die Ansicht um die jeweilige X-, Y- oder Z-Achse. Mit
+                zusätzlich gedrückter
+                <strong>Shift</strong>-Taste wird die Rotationsrichtung
+                umgekehrt.
+              </p>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <!-- ===================================================
+         03 – VISUALISIERUNG
+         =================================================== -->
+
+      <section class="section">
+        <div class="section-header">
+          <div>
+            <p class="section-number">03</p>
+
+            <h2>Seeds-Daten in drei Dimensionen</h2>
+
+            <p class="section-description">
+              210 Datensätze · 7 Ausgangsmerkmale · 3 Klassen · t-SNE auf 3
+              Dimensionen
+            </p>
+          </div>
+        </div>
+
+        <div class="scene-layout">
+          <!-- =================================================
+             WEBGL
+             ================================================= -->
+
+          <div class="canvas-container">
+            <canvas id="sceneCanvas" width="1000" height="650">
+              Dein Browser unterstützt Canvas nicht.
+            </canvas>
+          </div>
+
+          <!-- =================================================
+             STEUERUNG
+             ================================================= -->
+
+          <aside class="control-panel">
+            <!-- ===============================================
+               t-SNE
+               =============================================== -->
+
+            <section class="control-group control-group-primary">
+              <div class="control-heading-row">
+                <h3>t-SNE</h3>
+
+                <strong id="tsneModeStatus" class="small-status">
+                  Gespeichert
+                </strong>
+              </div>
+
+              <div class="status-list compact-status">
+                <div class="status-row">
+                  <span> Step </span>
+
+                  <strong id="stepCount"> 1000 </strong>
+                </div>
+
+                <div class="status-row">
+                  <span> Perplexity </span>
+
+                  <strong id="perplexityStatus"> 10 </strong>
+                </div>
+
+                <div class="status-row">
+                  <span> Epsilon </span>
+
+                  <strong id="epsilonStatus"> 20 </strong>
+                </div>
+
+                <div class="status-row">
+                  <span> Dimension </span>
+
+                  <strong id="dimensionStatus"> 3 </strong>
+                </div>
+              </div>
+
+              <button id="restartTsne" class="control-button" type="button">
+                Restart
+              </button>
+
+              <div class="compact-button-row">
+                <button id="stepTsne" class="control-button" type="button">
+                  Step
+                </button>
+
+                <button id="step10Tsne" class="control-button" type="button">
+                  Step 10
+                </button>
+              </div>
+
+              <p class="control-hint compact-hint">
+                <strong>R</strong> Restart · <strong>T</strong> Step ·
+                <strong>Shift + T</strong> Step 10
+              </p>
+            </section>
+
+            <!-- ===============================================
+               KLASSEN
+               =============================================== -->
+
+            <section class="control-group">
+              <h3>Klassen</h3>
+
+              <div class="legend-list">
+                <div class="legend-row">
+                  <span
+                    class="legend-dot legend-kama"
+                    aria-hidden="true"
+                  ></span>
+
+                  <span> Kama </span>
+
+                  <strong> 70 </strong>
+                </div>
+
+                <div class="legend-row">
+                  <span
+                    class="legend-dot legend-rosa"
+                    aria-hidden="true"
+                  ></span>
+
+                  <span> Rosa </span>
+
+                  <strong> 70 </strong>
+                </div>
+
+                <div class="legend-row">
+                  <span
+                    class="legend-dot legend-canadian"
+                    aria-hidden="true"
+                  ></span>
+
+                  <span> Canadian </span>
+
+                  <strong> 70 </strong>
+                </div>
+              </div>
+            </section>
+
+            <!-- ===============================================
+               DATENSATZ
+               =============================================== -->
+
+            <section class="control-group">
+              <h3>Datensatz</h3>
+
+              <div class="technical-grid">
+                <div class="technical-item">
+                  <span> Datensätze </span>
+
+                  <strong id="dataCountStatus"> 210 </strong>
+                </div>
+
+                <div class="technical-item">
+                  <span> Merkmale </span>
+
+                  <strong> 7 </strong>
+                </div>
+
+                <div class="technical-item">
+                  <span> Klassen </span>
+
+                  <strong> 3 </strong>
+                </div>
+
+                <div class="technical-item">
+                  <span> Reduktion </span>
+
+                  <strong> 7 → 3 </strong>
+                </div>
+
+                <div class="technical-item technical-item-wide">
+                  <span> Vorverarbeitung </span>
+
+                  <strong> Z-Standardisierung </strong>
+                </div>
+              </div>
+            </section>
+
+            <!-- ===============================================
+               DATEISTATUS
+               =============================================== -->
+
+            <section class="control-group">
+              <h3>Datenstatus</h3>
+
+              <div class="status-list compact-status">
+                <div class="status-row">
+                  <span> Seeds CSV </span>
+
+                  <strong id="csvStatus"> Lädt … </strong>
+                </div>
+
+                <div class="status-row">
+                  <span> Bestes Ergebnis </span>
+
+                  <strong id="bestDataStatus"> Lädt … </strong>
+                </div>
+              </div>
+            </section>
+          </aside>
+        </div>
+      </section>
+
+      <!-- ===================================================
+         04 – SEEDS-DATENSATZ
+         =================================================== -->
+
+      <section class="section">
+        <div class="section-header">
+          <div>
+            <p class="section-number">04</p>
+
+            <h2>Seeds-Datensatz</h2>
+          </div>
+        </div>
+
+        <div class="documentation-grid">
+          <article>
+            <h3>Aufbau</h3>
+
+            <p>
+              Der verwendete Seeds-Datensatz enthält insgesamt 210 Datensätze.
+              Jeder Datensatz besteht aus sieben numerischen Merkmalen und einer
+              Klassenkennung.
+            </p>
+
+            <p>
+              Die Datensätze werden aus der Datei
+              <code>data/seeds_dataset.csv</code> geladen und mit Papa Parse in
+              JavaScript verarbeitet.
+            </p>
+          </article>
+
+          <article>
+            <h3>Sieben Merkmale</h3>
+
+            <p>
+              Die sieben Eingangsdimensionen beschreiben geometrische
+              Eigenschaften der untersuchten Weizenkörner.
+            </p>
+
+            <ul class="feature-list">
+              <li>Fläche</li>
+
+              <li>Umfang</li>
+
+              <li>Kompaktheit</li>
+
+              <li>Kornlänge</li>
+
+              <li>Kornbreite</li>
+
+              <li>Asymmetriekoeffizient</li>
+
+              <li>Länge der Kornfurche</li>
+            </ul>
+          </article>
+
+          <article>
+            <h3>Klassen</h3>
+
+            <p>
+              Die letzte Spalte der CSV-Datei enthält die Klassenkennung des
+              jeweiligen Datensatzes.
+            </p>
+
+            <p>
+              Die Kennungen 1, 2 und 3 werden den Klassen
+              <strong>Kama</strong>, <strong>Rosa</strong> und
+              <strong>Canadian</strong>
+              zugeordnet und in der Visualisierung mit unterschiedlichen Farben
+              dargestellt.
+            </p>
+          </article>
+
+          <article>
+            <h3>Standardisierung</h3>
+
+            <p>
+              Vor der Dimensionsreduktion werden die sieben Eingangsmerkmale
+              z-standardisiert. Für jedes Merkmal werden Mittelwert und
+              Standardabweichung bestimmt.
+            </p>
+
+            <div class="formula-block">
+              <p>z = (x − μ) / σ</p>
+            </div>
+
+            <p>
+              Dadurch werden Merkmale mit unterschiedlichen Wertebereichen auf
+              eine vergleichbare Skala gebracht, bevor t-SNE die Beziehungen
+              zwischen den Datensätzen bestimmt.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <!-- ===================================================
+         05 – t-SNE
+         =================================================== -->
+
+      <section class="section">
+        <div class="section-header">
+          <div>
+            <p class="section-number">05</p>
+
+            <h2>Dimensionsreduktion</h2>
+          </div>
+        </div>
+
+        <div class="documentation-grid">
+          <article>
+            <h3>Grundidee von t-SNE</h3>
+
+            <p>
+              t-SNE bildet Ähnlichkeiten zwischen den hochdimensionalen
+              Datensätzen zunächst als Wahrscheinlichkeiten ab. Punkte, die sich
+              in den ursprünglichen sieben Merkmalen ähnlich sind, erhalten
+              dabei eine hohe Nachbarschaftswahrscheinlichkeit.
+            </p>
+
+            <p>
+              Im niedrigdimensionalen Raum werden ebenfalls Ähnlichkeiten
+              bestimmt. Der Algorithmus verändert die Positionen der Punkte
+              iterativ so, dass die Nachbarschaftsbeziehungen des ursprünglichen
+              Datenraums möglichst gut erhalten bleiben.
+            </p>
+
+            <p>
+              Für diese Aufgabe wird der sieben-dimensionale Seeds-Datensatz auf
+              drei Dimensionen reduziert. Die resultierenden Werte bestimmen die
+              X-, Y- und Z-Positionen der dargestellten Kugeln.
+            </p>
+          </article>
+
+          <article>
+            <h3>Verwendete Parameter</h3>
+
+            <div class="parameter-list">
+              <div class="parameter-row">
+                <span> Perplexity </span>
+
+                <strong> 10 </strong>
+              </div>
+
+              <div class="parameter-row">
+                <span> Epsilon </span>
+
+                <strong> 20 </strong>
+              </div>
+
+              <div class="parameter-row">
+                <span> Ziel-Dimension </span>
+
+                <strong> 3 </strong>
+              </div>
+
+              <div class="parameter-row">
+                <span> gespeicherte Iterationen </span>
+
+                <strong> 1000 </strong>
+              </div>
+            </div>
+          </article>
+
+          <article>
+            <h3>Optimierung der Parameter</h3>
+
+            <p>
+              Zur Auswahl einer geeigneten Perplexity wurden mehrere t-SNE-Läufe
+              miteinander verglichen. Getestet wurden die Werte
+              <strong>10</strong>, <strong>20</strong> und <strong>30</strong>.
+            </p>
+
+            <p>
+              Epsilon 20, drei Zieldimensionen und 1000 Iterationsschritte
+              wurden bei diesem Vergleich konstant gehalten. Beurteilt wurde
+              insbesondere, wie deutlich die drei bekannten Weizenklassen
+              räumlich voneinander getrennt dargestellt wurden.
+            </p>
+
+            <p>
+              Im ausgewählten Vergleich zeigte der Lauf mit
+              <strong>Perplexity 10</strong> die deutlichste visuelle Trennung
+              der drei Klassen. Bei den getesteten höheren Perplexity-Werten
+              waren stärkere Übergänge beziehungsweise Überschneidungen zwischen
+              einzelnen Klassen sichtbar.
+            </p>
+          </article>
+
+          <article>
+            <h3>Zufällige Initialisierung</h3>
+
+            <p>
+              Die verwendete t-SNE-Implementierung initialisiert einen neuen
+              Lauf mit Zufallswerten. Dadurch können verschiedene Neustarts
+              trotz identischer Parameter zu unterschiedlichen räumlichen
+              Anordnungen führen.
+            </p>
+
+            <p>
+              Das ausgewählte Ergebnis mit Perplexity 10, Epsilon 20 und 1000
+              Iterationen wurde deshalb separat gespeichert und wird beim Start
+              der Anwendung direkt geladen.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <!-- ===================================================
+         06 – GESPEICHERTES ERGEBNIS
+         =================================================== -->
+
+      <section class="section">
+        <div class="section-header">
+          <div>
+            <p class="section-number">06</p>
+
+            <h2>Gespeichertes bestes Ergebnis</h2>
+          </div>
+        </div>
+
+        <div class="documentation-grid">
+          <article>
+            <h3>Reproduzierbare Startansicht</h3>
+
+            <p>
+              Direkt nach dem Laden der Anwendung werden die zuvor ausgewählten
+              dimensionsreduzierten Koordinaten aus
+              <code>data/seeds-best.json</code> geladen.
+            </p>
+
+            <p>
+              Dadurch wird bei jedem Seitenaufruf dieselbe ausgewählte
+              Clusteranordnung dargestellt und das Ergebnis ist unabhängig von
+              einer erneuten zufälligen Initialisierung.
+            </p>
+          </article>
+
+          <article>
+            <h3>Restart</h3>
+
+            <p>
+              Erst nach einem manuellen Restart wird ein neues t-SNE-Objekt
+              erzeugt und mit den standardisierten ursprünglichen Seeds-Daten
+              initialisiert.
+            </p>
+
+            <p>
+              Der neue Lauf beginnt bei
+              <strong>Step 0</strong> und besitzt aufgrund der zufälligen
+              Initialisierung eine neue Ausgangslage.
+            </p>
+          </article>
+
+          <article>
+            <h3>Step</h3>
+
+            <p>
+              Mit <code>T</code> beziehungsweise der Schaltfläche „Step“ wird
+              genau eine t-SNE-Iteration berechnet.
+            </p>
+
+            <p>
+              Die daraus resultierenden dreidimensionalen Koordinaten werden
+              anschließend unmittelbar in der WebGL-Szene dargestellt und der
+              Step-Count wird um eins erhöht.
+            </p>
+          </article>
+
+          <article>
+            <h3>Step 10</h3>
+
+            <p>
+              Mit <code>Shift + T</code> beziehungsweise der Schaltfläche „Step
+              10“ werden zehn Iterationen unmittelbar hintereinander ausgeführt.
+            </p>
+
+            <p>
+              Anschließend wird die aktualisierte Punktwolke dargestellt und der
+              sichtbare Step-Count um zehn erhöht.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <!-- ===================================================
+         07 – 3D-DARSTELLUNG UND NAVIGATION
+         =================================================== -->
+
+      <section class="section">
+        <div class="section-header">
+          <div>
+            <p class="section-number">07</p>
+
+            <h2>3D-Darstellung und Navigation</h2>
+          </div>
+        </div>
+
+        <div class="documentation-grid">
+          <article>
+            <h3>Darstellung als Kugeln</h3>
+
+            <p>
+              Jeder der 210 Datensätze wird durch eine kleine dreidimensionale
+              Kugel repräsentiert.
+            </p>
+
+            <p>
+              Die drei t-SNE-Ausgabewerte bestimmen die Position der jeweiligen
+              Kugel im dreidimensionalen Raum. Für alle Datensätze wird dieselbe
+              Kugelgeometrie verwendet.
+            </p>
+          </article>
+
+          <article>
+            <h3>Farbcodierung</h3>
+
+            <p>
+              Die drei Weizenklassen werden mit deutlich unterscheidbaren Farben
+              dargestellt.
+            </p>
+
+            <p>
+              Kama wird blau, Rosa rot-orange und Canadian grün dargestellt. Die
+              Legende neben der Visualisierung zeigt die Zuordnung zwischen
+              Farbe und Klasse.
+            </p>
+          </article>
+
+          <article>
+            <h3>Navigation nach NAV</h3>
+
+            <p>
+              Die Kameranavigation orientiert sich an der Lerneinheit NAV.
+              Rotationen werden über Transformationsmatrizen direkt auf die
+              View-Matrix der Kamera angewendet.
+            </p>
+
+            <p>
+              Zusätzlich kann die Kamera entlang der Tiefenrichtung verschoben
+              werden. Dadurch lässt sich die Punktwolke aus verschiedenen
+              Richtungen und Abständen betrachten.
+            </p>
+          </article>
+
+          <article>
+            <h3>Räumliche Beurteilung</h3>
+
+            <p>
+              Die Navigation ist für die dreidimensionale Darstellung wichtig,
+              da sich Punkte in einer einzelnen zweidimensionalen Ansicht
+              überdecken können, obwohl sie in der Tiefe räumlich getrennt sind.
+            </p>
+
+            <p>
+              Durch die Rotation der Ansicht kann die räumliche Verteilung der
+              drei Klassen daher aus verschiedenen Perspektiven untersucht
+              werden.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <!-- ===================================================
+         08 – DOKUMENTATION
+         =================================================== -->
+
+      <section class="section documentation">
+        <div class="section-header">
+          <div>
+            <p class="section-number">08</p>
+
+            <h2>Dokumentation</h2>
+          </div>
+        </div>
+
+        <div class="documentation-grid">
+          <article>
+            <h3>Ausgangspunkt</h3>
+
+            <p>
+              Die Datenverarbeitung und die Integration von t-SNE orientieren
+              sich an der Lerneinheit DIM und dem dazu bereitgestellten
+              Template.
+            </p>
+
+            <p>
+              Verwendet werden insbesondere
+              <code>Papa.parse()</code> zum Verarbeiten der CSV-Daten,
+              <code>tsnejs.tSNE</code> für die Dimensionsreduktion sowie die
+              bereitgestellte Kugelgeometrie für die Darstellung der einzelnen
+              Datensätze.
+            </p>
+          </article>
+
+          <article>
+            <h3>Navigation</h3>
+
+            <p>Die Kamerasteuerung orientiert sich an der Lerneinheit NAV.</p>
+
+            <p>
+              Für Rotation und Translation werden Transformationsmatrizen direkt
+              mit der View-Matrix der Kamera multipliziert.
+            </p>
+          </article>
+
+          <article>
+            <h3>Test und Qualitätssicherung</h3>
+
+            <p>
+              Das automatische Laden des gespeicherten t-SNE-Ergebnisses sowie
+              das Laden und Verarbeiten der Seeds-CSV-Datei wurden getestet.
+            </p>
+
+            <p>
+              Nach einem Restart beginnt ein neu zufällig initialisierter
+              t-SNE-Lauf bei Step 0. Ein einzelner Step erhöht den Step-Count um
+              eins, während Step 10 zehn Iterationen hintereinander ausführt und
+              den Zähler entsprechend erhöht.
+            </p>
+
+            <p>
+              Zusätzlich wurden die farbliche Darstellung der drei Klassen sowie
+              die Rotations- und Translationsfunktionen der Kamera geprüft.
+            </p>
+
+            <p>
+              Abschließend wurde die Anwendung in Google Chrome unter macOS
+              getestet und die Browserkonsole auf JavaScript-, WebGL-, Shader-
+              und Ladefehler kontrolliert.
+            </p>
+          </article>
+
+          <article>
+            <h3>Quellen und verwandtes Material</h3>
+
+            <ul class="source-list">
+              <li>Lerneinheit DIM: Daten laden, CSV-Verarbeitung und t-SNE.</li>
+
+              <li>Lerneinheit NAV: Kamerarotation und Kameratranslation.</li>
+
+              <li>
+                DIM-Template:
+                <code>tsne.js</code>, <code>papaparse.min.js</code> und
+                <code>GVT_Src_vertexData_sphere.js</code>.
+              </li>
+
+              <li>
+                Seeds Dataset, UCI Machine Learning Repository:
+                <a
+                  href="https://archive.ics.uci.edu/ml/datasets/seeds"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  archive.ics.uci.edu
+                </a>
+              </li>
+
+              <li>
+                Charytanowicz et al.: Seeds-Datensatz, DOI:
+                <a
+                  href="https://doi.org/10.1007/978-3-642-13105-9_2"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  10.1007/978-3-642-13105-9_2
+                </a>
+              </li>
+            </ul>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <!-- =====================================================
+       FOOTER
+       ===================================================== -->
+
+    <footer class="page-footer">
+      <div class="container">
+        <p>Graphical Visualisation Technologies</p>
+      </div>
+    </footer>
+  </body>
+</html>

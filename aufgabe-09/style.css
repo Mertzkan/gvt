@@ -75,30 +75,33 @@ code {
 
 .back-link {
   display: inline-flex;
-
   align-items: center;
 
-  gap: 0.45rem;
+  gap: 7px;
 
-  margin-bottom: 28px;
+  margin-bottom: 30px;
 
-  color: #475569;
+  color: #1f5fa8;
+
+  font-size: 14px;
+  font-weight: 600;
 
   text-decoration: none;
-
-  font-size: 0.95rem;
-
-  font-weight: 600;
 }
 
 .back-link:hover {
-  color: #1f5fa8;
+  text-decoration: underline;
+}
+
+.back-link:focus-visible {
+  outline: 3px solid #7ba8da;
+  outline-offset: 3px;
 }
 
 .module-name {
   margin: 0 0 8px;
 
-  color: #1f5fa8;
+  color: #555555;
 
   font-size: 0.82rem;
 

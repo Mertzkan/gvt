@@ -65,30 +65,33 @@ code {
 
 .back-link {
   display: inline-flex;
-
   align-items: center;
 
   gap: 7px;
 
-  margin-bottom: 34px;
+  margin-bottom: 30px;
 
-  color: #555d66;
+  color: #1f5fa8;
 
   font-size: 14px;
-
   font-weight: 600;
 
   text-decoration: none;
 }
 
 .back-link:hover {
-  color: #1f5fa8;
+  text-decoration: underline;
+}
+
+.back-link:focus-visible {
+  outline: 3px solid #7ba8da;
+  outline-offset: 3px;
 }
 
 .module-name {
   margin: 0 0 8px;
 
-  color: #1f5fa8;
+  color: #555555;
 
   font-size: 13px;
 
